@@ -35,6 +35,9 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
     private val _monthlyTotal = MutableStateFlow(0)
     val monthlyTotal: StateFlow<Int> = _monthlyTotal.asStateFlow()
 
+    private val _parsedReceipt = MutableStateFlow<Receipt?>(null)
+    val parsedReceipt: StateFlow<Receipt?> = _parsedReceipt.asStateFlow()
+
     init {
         loadReceipts()
         loadMonthlyTotal()
@@ -58,10 +61,19 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
     }
 
     fun processOcrResult(textLines: List<String>, imagePath: String) {
+        val parsedReceipt = ReceiptParser.parse(textLines, imagePath)
+        _parsedReceipt.value = parsedReceipt
+    }
+
+    fun saveReceipt(receipt: Receipt) {
         viewModelScope.launch {
-            val parsedReceipt = ReceiptParser.parse(textLines, imagePath)
-            saveReceiptUseCase(parsedReceipt)
+            saveReceiptUseCase(receipt)
+            _parsedReceipt.value = null
         }
+    }
+
+    fun clearParsedReceipt() {
+        _parsedReceipt.value = null
     }
 
     fun deleteReceipt(receipt: Receipt) {
