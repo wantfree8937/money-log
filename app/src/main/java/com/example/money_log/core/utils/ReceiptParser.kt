@@ -43,24 +43,16 @@ object ReceiptParser {
     }
 
     private fun extractAmount(text: String): Int {
-        val patterns = listOf(
-            Regex("(?:합계|결제금액|금액|TOTAL|AMOUNT)[:\\s]*([\\d,]+)"),
-            Regex("([\\d,]+)(?:\\s*원)")
-        )
-
-        for (pattern in patterns) {
-            val match = pattern.find(text)
-            if (match != null) {
-                val amountStr = match.groupValues[1].replace(",", "")
-                return amountStr.toIntOrNull() ?: 0
-            }
+        // '금액' 관련 키워드 뒤에 오는 숫자만 최종 금액으로 인지
+        val amountRegex = Regex("(?:결제대상금액|결제금액|금액)[:\\s]*([\\d,]+)")
+        val match = amountRegex.find(text)
+        
+        if (match != null) {
+            val amountStr = match.groupValues[1].replace(",", "")
+            return amountStr.toIntOrNull() ?: 0
         }
 
-        val allNumbers = Regex("[\\d,]{4,10}").findAll(text)
-            .map { it.value.replace(",", "").toIntOrNull() ?: 0 }
-            .toList()
-        
-        return allNumbers.maxOrNull() ?: 0
+        return 0
     }
 
     private fun extractDate(text: String): String {
