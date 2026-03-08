@@ -3,6 +3,7 @@ package com.example.money_log.ui.camera
 import android.content.Context
 import android.util.Log
 import androidx.camera.core.CameraSelector
+import androidx.camera.core.ImageAnalysis
 import androidx.camera.core.ImageCapture
 import androidx.camera.core.ImageCaptureException
 import androidx.camera.core.Preview
@@ -23,8 +24,9 @@ class CameraManager(
     private val previewView: PreviewView
 ) {
     private var imageCapture: ImageCapture? = null
+    private var imageAnalysis: ImageAnalysis? = null
 
-    fun startCamera() {
+    fun startCamera(analyzer: ImageAnalysis.Analyzer? = null) {
         val cameraProviderFuture = ProcessCameraProvider.getInstance(context)
 
         cameraProviderFuture.addListener({
@@ -38,12 +40,25 @@ class CameraManager(
                 .setCaptureMode(ImageCapture.CAPTURE_MODE_MINIMIZE_LATENCY)
                 .build()
 
+            // 실시간 분석을 위한 ImageAnalysis 설정
+            imageAnalysis = if (analyzer != null) {
+                ImageAnalysis.Builder()
+                    .setBackpressureStrategy(ImageAnalysis.STRATEGY_KEEP_ONLY_LATEST)
+                    .build()
+                    .also {
+                        it.setAnalyzer(ContextCompat.getMainExecutor(context), analyzer)
+                    }
+            } else null
+
             val cameraSelector = CameraSelector.DEFAULT_BACK_CAMERA
 
             try {
                 cameraProvider.unbindAll()
+                val useCases = mutableListOf(preview, imageCapture).apply {
+                    imageAnalysis?.let { add(it) }
+                }
                 cameraProvider.bindToLifecycle(
-                    lifecycleOwner, cameraSelector, preview, imageCapture
+                    lifecycleOwner, cameraSelector, *useCases.toTypedArray()
                 )
             } catch (e: Exception) {
                 Log.e("CameraManager", "Use case binding failed", e)

@@ -24,6 +24,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.viewinterop.AndroidView
+import com.example.money_log.core.utils.ReceiptAnalyzer
 import com.example.money_log.ui.camera.CameraManager
 import com.example.money_log.ui.theme.MainGreen
 import java.io.File
@@ -36,10 +37,28 @@ fun CameraScreen(
     val context = LocalContext.current
     val lifecycleOwner = LocalLifecycleOwner.current
     val previewView = remember { PreviewView(context) }
+    
+    // 자동 스캔 상태 관리
+    var isAutoDetecting by remember { mutableStateOf(false) }
+    val analyzer = remember {
+        ReceiptAnalyzer(onReceiptDetected = {
+            isAutoDetecting = true
+            // 캡처 실행 (약간의 피드백을 위해 지연을 줄 수도 있음)
+            onImageCaptured // 실제 캡처는 CameraUIOverlay의 onCapture와 연결된 것과 동일하게 수행
+        })
+    }
+    
     val cameraManager = remember { CameraManager(context, lifecycleOwner, previewView) }
 
     LaunchedEffect(Unit) {
-        cameraManager.startCamera()
+        cameraManager.startCamera(analyzer)
+    }
+
+    // analyzer의 콜백 내용을 완성하기 위해 수정
+    LaunchedEffect(isAutoDetecting) {
+        if (isAutoDetecting) {
+            cameraManager.takePhoto(onImageCaptured)
+        }
     }
 
     Box(modifier = Modifier.fillMaxSize().background(Color.Black)) {
@@ -52,14 +71,15 @@ fun CameraScreen(
         // Overlay & Controls
         CameraUIOverlay(
             onClose = onClose,
-            onCapture = { cameraManager.takePhoto(onImageCaptured) }
+            onCapture = { cameraManager.takePhoto(onImageCaptured) },
+            isAutoDetecting = isAutoDetecting
         )
     }
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun CameraUIOverlay(onClose: () -> Unit, onCapture: () -> Unit) {
+fun CameraUIOverlay(onClose: () -> Unit, onCapture: () -> Unit, isAutoDetecting: Boolean = false) {
     Column(modifier = Modifier.fillMaxSize()) {
         // Top Bar
         Row(
@@ -92,7 +112,11 @@ fun CameraUIOverlay(onClose: () -> Unit, onCapture: () -> Unit) {
                 .fillMaxWidth(0.85f)
                 .aspectRatio(0.7f)
                 .align(Alignment.CenterHorizontally)
-                .border(2.dp, Color.White.copy(alpha = 0.5f), RoundedCornerShape(20.dp))
+                .border(
+                    2.dp, 
+                    if (isAutoDetecting) MainGreen else Color.White.copy(alpha = 0.5f), 
+                    RoundedCornerShape(20.dp)
+                )
         ) {
             // Corners
             GuideCorners()
@@ -102,8 +126,8 @@ fun CameraUIOverlay(onClose: () -> Unit, onCapture: () -> Unit) {
         }
         
         Text(
-            "Align the receipt within the frame",
-            color = Color.White,
+            if (isAutoDetecting) "Receipt detected! Capturing..." else "Align the receipt within the frame",
+            color = if (isAutoDetecting) MainGreen else Color.White,
             modifier = Modifier.align(Alignment.CenterHorizontally).padding(top = 24.dp),
             style = MaterialTheme.typography.bodyMedium
         )
