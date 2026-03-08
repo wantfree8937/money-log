@@ -24,6 +24,8 @@ import com.example.money_log.domain.model.Receipt
 import com.example.money_log.ui.theme.*
 import android.graphics.BitmapFactory
 import java.io.File
+import java.text.SimpleDateFormat
+import java.util.*
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -33,10 +35,38 @@ fun ReceiptDetailsScreen(
     onRetake: () -> Unit,
     onBack: () -> Unit
 ) {
-    var editedMerchant by remember { mutableStateOf(receipt.storeName) }
-    var editedDate by remember { mutableStateOf(receipt.date) }
+    var editedMerchant by remember { mutableStateOf("") }
+    var editedDate by remember { mutableStateOf("") }
     var editedAmount by remember { mutableStateOf(receipt.amount.toString()) }
     var editedCategory by remember { mutableStateOf(receipt.category) }
+
+    // Date Picker State
+    var showDatePicker by remember { mutableStateOf(false) }
+    val datePickerState = rememberDatePickerState()
+    
+    if (showDatePicker) {
+        DatePickerDialog(
+            onDismissRequest = { showDatePicker = false },
+            confirmButton = {
+                TextButton(onClick = {
+                    datePickerState.selectedDateMillis?.let { millis ->
+                        val sdf = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault())
+                        editedDate = sdf.format(Date(millis))
+                    }
+                    showDatePicker = false
+                }) {
+                    Text("확인")
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { showDatePicker = false }) {
+                    Text("취소")
+                }
+            }
+        ) {
+            DatePicker(state = datePickerState)
+        }
+    }
 
     Scaffold(
         topBar = {
@@ -102,7 +132,8 @@ fun ReceiptDetailsScreen(
                 label = "날짜",
                 value = editedDate,
                 onValueChange = { editedDate = it },
-                icon = Icons.Default.CalendarToday
+                icon = Icons.Default.CalendarToday,
+                onIconClick = { showDatePicker = true }
             )
             
             ReceiptInputField(
@@ -162,6 +193,7 @@ fun ReceiptInputField(
     value: String,
     onValueChange: (String) -> Unit,
     icon: ImageVector? = null,
+    onIconClick: (() -> Unit)? = null,
     prefix: String? = null,
     isDropdown: Boolean = false
 ) {
@@ -187,7 +219,13 @@ fun ReceiptInputField(
                 if (isDropdown) {
                     Icon(Icons.Default.ExpandMore, contentDescription = null, tint = MainGreen)
                 } else if (icon != null) {
-                    Icon(icon, contentDescription = null, tint = MainGreen)
+                    if (onIconClick != null) {
+                        IconButton(onClick = onIconClick) {
+                            Icon(icon, contentDescription = null, tint = MainGreen)
+                        }
+                    } else {
+                        Icon(icon, contentDescription = null, tint = MainGreen)
+                    }
                 }
             },
             prefix = prefix?.let { { Text(it, fontWeight = FontWeight.Bold) } },
