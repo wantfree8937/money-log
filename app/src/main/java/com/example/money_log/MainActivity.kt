@@ -24,6 +24,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.example.money_log.core.utils.ImageProcessor
 import com.example.money_log.core.utils.OcrManager
 import com.example.money_log.presentation.viewmodel.MainViewModel
 import com.example.money_log.ui.camera.CameraManager
@@ -78,8 +79,14 @@ fun MainAppHost(viewModel: MainViewModel) {
                 onImageCaptured = { file ->
                     showCamera = false
                     scope.launch {
-                        val textLines = OcrManager.recognizeText(context, Uri.fromFile(file))
-                        viewModel.processOcrResult(textLines, file.absolutePath)
+                        // 이미지 전처리 (크롭, 그레이스케일, 대비 개선)
+                        val processedFile = ImageProcessor.processImage(context, file)
+                        
+                        // 전처리된 이미지로 OCR 실행
+                        val textLines = OcrManager.recognizeText(context, Uri.fromFile(processedFile))
+                        
+                        // 결과 처리 (디테일 화면에는 전처리된 이미지를 보여줌)
+                        viewModel.processOcrResult(textLines, processedFile.absolutePath)
                     }
                 },
                 onClose = { showCamera = false }
