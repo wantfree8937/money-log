@@ -32,7 +32,7 @@ fun HomeScreen(
             TopAppBar(
                 title = { 
                     Text(
-                        "MoneyLog", 
+                        "머니로그", 
                         style = MaterialTheme.typography.titleLarge.copy(
                             fontWeight = FontWeight.Bold,
                             fontSize = 24.sp
@@ -43,17 +43,17 @@ fun HomeScreen(
                 },
                 navigationIcon = {
                     IconButton(onClick = { /* Open Drawer */ }) {
-                        Icon(Icons.Default.Menu, contentDescription = "Menu")
+                        Icon(Icons.Default.Menu, contentDescription = "메뉴")
                     }
                 },
                 actions = {
                     IconButton(onClick = { /* Notifications */ }) {
-                        Icon(Icons.Default.Notifications, contentDescription = "Notifications")
+                        Icon(Icons.Default.Notifications, contentDescription = "알림")
                     }
                     IconButton(onClick = { /* Profile */ }) {
                         Icon(
                             Icons.Default.AccountCircle, 
-                            contentDescription = "Profile",
+                            contentDescription = "프로필",
                             modifier = Modifier.size(32.dp)
                         )
                     }
@@ -72,7 +72,7 @@ fun HomeScreen(
                 shape = CircleShape,
                 modifier = Modifier.size(64.dp)
             ) {
-                Icon(Icons.Default.CameraAlt, contentDescription = "Scan", modifier = Modifier.size(32.dp))
+                Icon(Icons.Default.CameraAlt, contentDescription = "스캔", modifier = Modifier.size(32.dp))
             }
         },
         floatingActionButtonPosition = FabPosition.Center,
@@ -92,7 +92,7 @@ fun HomeScreen(
             Spacer(modifier = Modifier.height(24.dp))
             
             // Category Breakdown (Placeholder for now)
-            CategoryBreakdownCard()
+            CategoryBreakdownCard(monthlyTotal)
             
             Spacer(modifier = Modifier.height(24.dp))
             
@@ -103,11 +103,11 @@ fun HomeScreen(
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 Text(
-                    "Recent Transactions", 
+                    "내역", 
                     style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold)
                 )
                 TextButton(onClick = { /* View All */ }) {
-                    Text("View All", color = MainGreen)
+                    Text("전체보기", color = MainGreen)
                 }
             }
             
@@ -127,13 +127,13 @@ fun TotalSpendingCard(total: Int) {
         Box(modifier = Modifier.fillMaxSize().padding(24.dp)) {
             Column {
                 Text(
-                    "Total Spending (This Month)", 
+                    "이번 달 총 지불액", 
                     color = Color.White.copy(alpha = 0.8f),
                     style = MaterialTheme.typography.bodyMedium
                 )
                 Spacer(modifier = Modifier.height(8.dp))
                 Text(
-                    "$ %,d.00".format(total), // Simplified decimal
+                    "₩ %,d".format(total), 
                     color = Color.White,
                     style = MaterialTheme.typography.headlineLarge.copy(fontWeight = FontWeight.Bold, fontSize = 36.sp)
                 )
@@ -154,7 +154,7 @@ fun TotalSpendingCard(total: Int) {
                         )
                         Spacer(modifier = Modifier.width(4.dp))
                         Text(
-                            "4.2% less than last month", 
+                            "지난달보다 4.2% 적게 썼어요", 
                             color = Color.White, 
                             style = MaterialTheme.typography.bodySmall
                         )
@@ -174,7 +174,7 @@ fun TotalSpendingCard(total: Int) {
 }
 
 @Composable
-fun CategoryBreakdownCard() {
+fun CategoryBreakdownCard(total: Int) {
     Card(
         modifier = Modifier.fillMaxWidth(),
         shape = RoundedCornerShape(24.dp),
@@ -185,8 +185,8 @@ fun CategoryBreakdownCard() {
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceBetween
             ) {
-                Text("Category Breakdown", fontWeight = FontWeight.Bold)
-                Text("Monthly", color = TextGray, style = MaterialTheme.typography.bodySmall)
+                Text("카테고리별 지출", fontWeight = FontWeight.Bold)
+                Text("이번 달", color = TextGray, style = MaterialTheme.typography.bodySmall)
             }
             
             Spacer(modifier = Modifier.height(16.dp))
@@ -211,8 +211,8 @@ fun CategoryBreakdownCard() {
                     trackColor = Color.Transparent
                 )
                 Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                    Text("$1.2k", style = MaterialTheme.typography.headlineSmall.copy(fontWeight = FontWeight.Bold))
-                    Text("SPENT", style = MaterialTheme.typography.labelSmall, color = TextGray)
+                    Text("₩ %,d".format(total), style = MaterialTheme.typography.headlineSmall.copy(fontWeight = FontWeight.Bold))
+                    Text("지출", style = MaterialTheme.typography.labelSmall, color = TextGray)
                 }
             }
             
@@ -222,9 +222,9 @@ fun CategoryBreakdownCard() {
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceEvenly
             ) {
-                LegendItem("Food", "45%", CategoryFood)
-                LegendItem("Transport", "25%", CategoryTransport)
-                LegendItem("Shopping", "30%", CategoryShopping)
+                LegendItem("식비", "45%", CategoryFood)
+                LegendItem("교통", "25%", CategoryTransport)
+                LegendItem("쇼핑", "30%", CategoryShopping)
             }
         }
     }
@@ -295,14 +295,14 @@ fun TransactionItem(receipt: Receipt) {
             Column(modifier = Modifier.weight(1f)) {
                 Text(receipt.storeName, fontWeight = FontWeight.Bold)
                 Text(
-                    "Today, 12:45 PM • ${receipt.category}", 
+                    "오늘, 오후 12:45 • ${receipt.category}", 
                     style = MaterialTheme.typography.bodySmall,
                     color = TextGray
                 )
             }
             
             Text(
-                "- $ %,d.00".format(receipt.amount), 
+                "- ₩ %,d".format(receipt.amount), 
                 fontWeight = FontWeight.Bold,
                 style = MaterialTheme.typography.bodyLarge
             )
@@ -319,8 +319,8 @@ fun MoneyLogBottomNavigation() {
         NavigationBarItem(
             selected = true,
             onClick = {},
-            icon = { Icon(Icons.Default.Home, contentDescription = "Home") },
-            label = { Text("Home") },
+            icon = { Icon(Icons.Default.Home, contentDescription = "홈") },
+            label = { Text("홈") },
             colors = NavigationBarItemDefaults.colors(
                 selectedIconColor = MainGreen,
                 selectedTextColor = MainGreen,
@@ -332,21 +332,21 @@ fun MoneyLogBottomNavigation() {
         NavigationBarItem(
             selected = false,
             onClick = {},
-            icon = { Icon(Icons.Default.History, contentDescription = "History") },
-            label = { Text("History") }
+            icon = { Icon(Icons.Default.History, contentDescription = "내역") },
+            label = { Text("내역") }
         )
         Spacer(Modifier.weight(1f)) // Center space for FAB
         NavigationBarItem(
             selected = false,
             onClick = {},
-            icon = { Icon(Icons.Default.AccountBalanceWallet, contentDescription = "Budget") },
-            label = { Text("Budget") }
+            icon = { Icon(Icons.Default.AccountBalanceWallet, contentDescription = "예산") },
+            label = { Text("예산") }
         )
         NavigationBarItem(
             selected = false,
             onClick = {},
-            icon = { Icon(Icons.Default.Settings, contentDescription = "Settings") },
-            label = { Text("Settings") }
+            icon = { Icon(Icons.Default.Settings, contentDescription = "설정") },
+            label = { Text("설정") }
         )
     }
 }

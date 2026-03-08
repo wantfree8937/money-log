@@ -91,16 +91,16 @@ fun CameraUIOverlay(onClose: () -> Unit, onCapture: () -> Unit, isAutoDetecting:
             verticalAlignment = Alignment.CenterVertically
         ) {
             IconButton(onClick = onClose) {
-                Icon(Icons.Default.Close, contentDescription = "Close", tint = Color.White)
+                Icon(Icons.Default.Close, contentDescription = "닫기", tint = Color.White)
             }
             Text(
-                "Scan Receipt", 
+                "영수증 스캔", 
                 color = Color.White, 
                 fontWeight = FontWeight.Bold,
                 style = MaterialTheme.typography.titleMedium
             )
             IconButton(onClick = { /* Flash */ }) {
-                Icon(Icons.Default.FlashOn, contentDescription = "Flash", tint = Color.White)
+                Icon(Icons.Default.FlashOn, contentDescription = "플래시", tint = Color.White)
             }
         }
 
@@ -126,7 +126,7 @@ fun CameraUIOverlay(onClose: () -> Unit, onCapture: () -> Unit, isAutoDetecting:
         }
         
         Text(
-            if (isAutoDetecting) "Receipt detected! Capturing..." else "Align the receipt within the frame",
+            if (isAutoDetecting) "영수증 감지됨! 촬영 중..." else "영수증을 가이드 안에 맞춰주세요",
             color = if (isAutoDetecting) MainGreen else Color.White,
             modifier = Modifier.align(Alignment.CenterHorizontally).padding(top = 24.dp),
             style = MaterialTheme.typography.bodyMedium
@@ -140,7 +140,7 @@ fun CameraUIOverlay(onClose: () -> Unit, onCapture: () -> Unit, isAutoDetecting:
             horizontalArrangement = Arrangement.SpaceBetween,
             verticalAlignment = Alignment.CenterVertically
         ) {
-            CameraControlButton(Icons.Default.Image, "GALLERY")
+            CameraControlButton(Icons.Default.Image, "갤러리")
             
             // Shutter Button
             Surface(
@@ -154,7 +154,7 @@ fun CameraUIOverlay(onClose: () -> Unit, onCapture: () -> Unit, isAutoDetecting:
                 )
             }
 
-            CameraControlButton(Icons.Default.Cameraswitch, "FLIP")
+            CameraControlButton(Icons.Default.Cameraswitch, "카메라 전환")
         }
     }
 }

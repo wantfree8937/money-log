@@ -41,10 +41,10 @@ fun ReceiptDetailsScreen(
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("Receipt Details", fontWeight = FontWeight.Bold) },
+                title = { Text("상세 정보", fontWeight = FontWeight.Bold) },
                 navigationIcon = {
                     IconButton(onClick = onBack) {
-                        Icon(Icons.Default.ArrowBack, contentDescription = "Back")
+                        Icon(Icons.Default.ArrowBack, contentDescription = "뒤로가기")
                     }
                 },
                 colors = TopAppBarDefaults.topAppBarColors(containerColor = SurfaceWhite)
@@ -68,7 +68,7 @@ fun ReceiptDetailsScreen(
             if (bitmap != null) {
                 Image(
                     bitmap = bitmap.asImageBitmap(),
-                    contentDescription = "Receipt Image",
+                    contentDescription = "영수증 이미지",
                     modifier = Modifier
                         .fillMaxWidth()
                         .height(240.dp)
@@ -84,7 +84,7 @@ fun ReceiptDetailsScreen(
                         .background(Color.LightGray),
                     contentAlignment = Alignment.Center
                 ) {
-                    Text("Image Not Found")
+                    Text("이미지를 찾을 수 없습니다")
                 }
             }
 
@@ -92,28 +92,28 @@ fun ReceiptDetailsScreen(
 
             // Form Fields
             ReceiptInputField(
-                label = "Merchant Name",
+                label = "가맹점 이름",
                 value = editedMerchant,
                 onValueChange = { editedMerchant = it },
                 icon = Icons.Default.Store
             )
             
             ReceiptInputField(
-                label = "Date",
+                label = "날짜",
                 value = editedDate,
                 onValueChange = { editedDate = it },
                 icon = Icons.Default.CalendarToday
             )
             
             ReceiptInputField(
-                label = "Total Amount",
+                label = "합계 금액",
                 value = editedAmount,
                 onValueChange = { editedAmount = it },
-                prefix = "$ "
+                prefix = "₩ "
             )
             
             ReceiptInputField(
-                label = "Category",
+                label = "카테고리",
                 value = editedCategory,
                 onValueChange = { editedCategory = it },
                 icon = Icons.Default.Category,
@@ -136,7 +136,7 @@ fun ReceiptDetailsScreen(
                 shape = RoundedCornerShape(12.dp),
                 colors = ButtonDefaults.buttonColors(containerColor = MainGreen)
             ) {
-                Text("Save Receipt", fontWeight = FontWeight.Bold, fontSize = 16.sp)
+                Text("내역 저장", fontWeight = FontWeight.Bold, fontSize = 16.sp)
             }
             
             Spacer(modifier = Modifier.height(12.dp))
@@ -147,7 +147,7 @@ fun ReceiptDetailsScreen(
                 shape = RoundedCornerShape(12.dp),
                 colors = ButtonDefaults.buttonColors(containerColor = LightGreen, contentColor = PrimaryGreen)
             ) {
-                Text("Retake Photo", fontWeight = FontWeight.Bold, fontSize = 16.sp)
+                Text("다시 촬영", fontWeight = FontWeight.Bold, fontSize = 16.sp)
             }
             
             Spacer(modifier = Modifier.height(32.dp))
