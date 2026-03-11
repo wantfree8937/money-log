@@ -2,9 +2,9 @@ package com.example.money_log.ui.theme
 
 import androidx.compose.ui.graphics.Color
 
-val PrimaryGreen = Color(0xFF2E6B4A) // Darker green for text/icons
-val MainGreen = Color(0xFF27D38D) // Vibrant green for cards/buttons
-val LightGreen = Color(0xFFE6F9F1) // Very light green for backgrounds
+val PrimaryGreen = Color(0xFF2E6B4A) // 텍스트 및 아이콘용 어두운 초록색
+val MainGreen = Color(0xFF27D38D) // 카드 및 버튼용 선명한 초록색
+val LightGreen = Color(0xFFE6F9F1) // 배경용 매우 밝은 초록색
 val BackgroundGray = Color(0xFFF7F8FA)
 val SurfaceWhite = Color(0xFFFFFFFF)
 

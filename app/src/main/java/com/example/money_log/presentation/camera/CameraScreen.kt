@@ -62,13 +62,13 @@ fun CameraScreen(
     }
 
     Box(modifier = Modifier.fillMaxSize().background(Color.Black)) {
-        // Camera Preview
+        // 카메라 프리뷰
         AndroidView(
             factory = { previewView },
             modifier = Modifier.fillMaxSize().clip(RoundedCornerShape(bottomStart = 32.dp, bottomEnd = 32.dp))
         )
 
-        // Overlay & Controls
+        // 오버레이 및 컨트롤
         CameraUIOverlay(
             onClose = onClose,
             onCapture = { cameraManager.takePhoto(onImageCaptured) },
@@ -81,7 +81,7 @@ fun CameraScreen(
 @Composable
 fun CameraUIOverlay(onClose: () -> Unit, onCapture: () -> Unit, isAutoDetecting: Boolean = false) {
     Column(modifier = Modifier.fillMaxSize()) {
-        // Top Bar
+        // 상단 바
         Row(
             modifier = Modifier
                 .fillMaxWidth()
@@ -106,7 +106,7 @@ fun CameraUIOverlay(onClose: () -> Unit, onCapture: () -> Unit, isAutoDetecting:
 
         Spacer(modifier = Modifier.weight(1f))
 
-        // Guide Frame
+        // 가이드 프레임
         Box(
             modifier = Modifier
                 .fillMaxWidth(0.85f)
@@ -118,10 +118,10 @@ fun CameraUIOverlay(onClose: () -> Unit, onCapture: () -> Unit, isAutoDetecting:
                     RoundedCornerShape(20.dp)
                 )
         ) {
-            // Corners
+            // 모서리
             GuideCorners()
             
-            // Scanning Line Animation
+            // 스캔 라인 애니메이션
             ScanningLine()
         }
         
@@ -134,7 +134,7 @@ fun CameraUIOverlay(onClose: () -> Unit, onCapture: () -> Unit, isAutoDetecting:
 
         Spacer(modifier = Modifier.weight(1f))
 
-        // Bottom Controls
+        // 하단 컨트롤
         Row(
             modifier = Modifier.fillMaxWidth().padding(bottom = 48.dp, start = 32.dp, end = 32.dp),
             horizontalArrangement = Arrangement.SpaceBetween,
@@ -142,7 +142,7 @@ fun CameraUIOverlay(onClose: () -> Unit, onCapture: () -> Unit, isAutoDetecting:
         ) {
             CameraControlButton(Icons.Default.Image, "갤러리")
             
-            // Shutter Button
+            // 셔터 버튼
             Surface(
                 modifier = Modifier.size(80.dp),
                 shape = CircleShape,

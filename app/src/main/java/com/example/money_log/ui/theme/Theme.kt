@@ -29,7 +29,7 @@ private val LightColorScheme = lightColorScheme(
 @Composable
 fun MoneyLogTheme(
     darkTheme: Boolean = isSystemInDarkTheme(),
-    // Disable dynamicColor for premium branded look consistency
+    // 프리미엄 브랜드 룩의 일관성을 위해 dynamicColor 비활성화
     dynamicColor: Boolean = false,
     content: @Composable () -> Unit
 ) {
@@ -38,7 +38,7 @@ fun MoneyLogTheme(
             val context = LocalContext.current
             if (darkTheme) dynamicDarkColorScheme(context) else dynamicLightColorScheme(context)
         }
-        // Simplified for this redesign to focus on the provided light theme
+        // 제공된 라이트 테마에 집중하기 위해 단순화됨
         else -> LightColorScheme
     }
 

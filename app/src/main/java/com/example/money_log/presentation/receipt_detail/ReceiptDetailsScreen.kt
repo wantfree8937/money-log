@@ -39,7 +39,7 @@ fun ReceiptDetailsScreen(
     var editedAmount by remember { mutableStateOf(receipt.amount.toString()) }
     var editedCategory by remember { mutableStateOf(receipt.category) }
 
-    // Date Picker State
+    // 날짜 선택기 상태
     var showDatePicker by remember { mutableStateOf(false) }
     val datePickerState = rememberDatePickerState()
     
@@ -90,7 +90,7 @@ fun ReceiptDetailsScreen(
         ) {
             Spacer(modifier = Modifier.height(16.dp))
 
-            // Receipt Image Preview
+            // 영수증 이미지 미리보기
             val bitmap = remember(receipt.imagePath) {
                 BitmapFactory.decodeFile(receipt.imagePath)
             }
@@ -119,7 +119,7 @@ fun ReceiptDetailsScreen(
 
             Spacer(modifier = Modifier.height(24.dp))
 
-            // Form Fields
+            // 입력 필드들
             ReceiptInputField(
                 label = "가맹점 이름",
                 value = editedMerchant,
@@ -152,7 +152,7 @@ fun ReceiptDetailsScreen(
 
             Spacer(modifier = Modifier.height(32.dp))
 
-            // Action Buttons
+            // 작업 버튼들
             Button(
                 onClick = { 
                     onSave(receipt.copy(

@@ -35,7 +35,7 @@ object ImageProcessor {
             
             outputFile
         } catch (e: Exception) {
-            Log.e("ImageProcessor", "Image processing failed", e)
+            Log.e("ImageProcessor", "이미지 처리 실패", e)
             inputFile
         }
     }

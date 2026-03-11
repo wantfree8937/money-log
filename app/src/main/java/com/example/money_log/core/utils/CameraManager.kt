@@ -61,7 +61,7 @@ class CameraManager(
                     lifecycleOwner, cameraSelector, *useCases.toTypedArray()
                 )
             } catch (e: Exception) {
-                Log.e("CameraManager", "Use case binding failed", e)
+                Log.e("CameraManager", "유스케이스 바인딩 실패", e)
             }
         }, ContextCompat.getMainExecutor(context))
     }
@@ -87,7 +87,7 @@ class CameraManager(
                 }
 
                 override fun onError(exc: ImageCaptureException) {
-                    Log.e("CameraManager", "Photo capture failed: ${exc.message}", exc)
+                    Log.e("CameraManager", "사진 촬영 실패: ${exc.message}", exc)
                 }
             }
         )

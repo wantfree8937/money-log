@@ -44,16 +44,16 @@ fun HomeScreen(
                 .verticalScroll(scrollState)
                 .padding(horizontal = 16.dp)
         ) {
-            // Top Padding for Status Bar if topBar is removed
+            // topBar가 제거된 경우 상태 표시줄을 위한 상단 패딩
             Spacer(modifier = Modifier.statusBarsPadding())
             Spacer(modifier = Modifier.height(16.dp))
             
-            // Total Spending Card
+            // 총 지출 카드
             TotalSpendingCard(monthlyTotal)
             
             Spacer(modifier = Modifier.height(24.dp))
             
-            // Category Breakdown using real data
+            // 실시간 데이터를 사용한 카테고리별 통계
             val categoryStats = remember(receipts) {
                 if (receipts.isEmpty() || monthlyTotal == 0) emptyList()
                 else receipts.groupBy { it.category }.map { (cat, list) ->
@@ -74,7 +74,7 @@ fun HomeScreen(
                 Spacer(modifier = Modifier.height(24.dp))
             }
             
-            // Recent Transactions Header
+            // 최근 내역 헤더
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceBetween,
@@ -84,12 +84,12 @@ fun HomeScreen(
                     "내역", 
                     style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold)
                 )
-                TextButton(onClick = { /* View All */ }) {
+                TextButton(onClick = { /* 전체보기 */ }) {
                     Text("전체보기", color = MainGreen)
                 }
             }
             
-            // Transactions List
+            // 내역 리스트
             TransactionList(receipts, onDeleteReceipt)
         }
     }
@@ -140,7 +140,7 @@ fun TotalSpendingCard(total: Int) {
                 }
             }
             
-            // Wallet Icon overlay
+            // 지갑 아이콘 오버레이
             Icon(
                 Icons.Default.AccountBalanceWallet,
                 contentDescription = null,
@@ -169,12 +169,12 @@ fun CategoryBreakdownCard(total: Int, stats: List<CategoryData>) {
             
             Spacer(modifier = Modifier.height(16.dp))
             
-            // Donut Chart showing real proportional data
+            // 실제 데이터를 보여주는 도넛 차트
             Box(
                 modifier = Modifier.size(160.dp).align(Alignment.CenterHorizontally),
                 contentAlignment = Alignment.Center
             ) {
-                // Background Track
+                // 배경 트랙
                 CircularProgressIndicator(
                     progress = 1f,
                     modifier = Modifier.fillMaxSize(),
@@ -183,7 +183,7 @@ fun CategoryBreakdownCard(total: Int, stats: List<CategoryData>) {
                     trackColor = Color.Transparent
                 )
                 
-                // Overlay segments (simplified representation using multiple indicators)
+                // 오버레이 세그먼트 (여러 인디케이터를 사용한 단순화된 표현)
                 var currentCombinedPercent = 0f
                 stats.take(3).forEach { cat ->
                     val progress = (currentCombinedPercent + cat.percent) / 100f
@@ -205,7 +205,7 @@ fun CategoryBreakdownCard(total: Int, stats: List<CategoryData>) {
             
             Spacer(modifier = Modifier.height(24.dp))
             
-            // Row-based Legend for readability
+            // 가독성을 위한 행 기반 범례
             Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
                 stats.chunked(3).forEach { rowStats ->
                     Row(
@@ -336,7 +336,7 @@ fun MoneyLogBottomNavigation(onCameraClick: () -> Unit) {
             label = { Text("내역") }
         )
         
-        // Circular Camera Button in the center
+        // 중앙의 원형 카메라 버튼
         Box(
             modifier = Modifier.weight(1f).fillMaxHeight(),
             contentAlignment = Alignment.Center
