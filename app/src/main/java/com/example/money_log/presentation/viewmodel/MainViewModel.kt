@@ -65,10 +65,13 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
 
     fun processOcrResult(textLines: List<String>, imagePath: String) {
         val parsed = ReceiptParser.parse(textLines, imagePath)
+        // 사용자의 요청에 따라 촬영(또는 재촬영) 시 가맹점명과 날짜를 빈칸으로 초기화
+        val clearedParsed = parsed.copy(storeName = "", date = "")
+        
         // 만약 기존 영수증을 수정(재촬영) 중이었다면 해당 ID를 유지
         _parsedReceipt.value = currentEditingId?.let { id ->
-            parsed.copy(id = id)
-        } ?: parsed
+            clearedParsed.copy(id = id)
+        } ?: clearedParsed
     }
 
     fun setSelectedReceipt(receipt: Receipt) {

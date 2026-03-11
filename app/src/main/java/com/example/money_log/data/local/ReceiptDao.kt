@@ -8,7 +8,7 @@ import kotlinx.coroutines.flow.Flow
  */
 @Dao
 interface ReceiptDao {
-    @Query("SELECT * FROM receipts ORDER BY id DESC")
+    @Query("SELECT * FROM receipts ORDER BY createdAt DESC")
     fun getAllReceipts(): Flow<List<ReceiptEntity>>
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)

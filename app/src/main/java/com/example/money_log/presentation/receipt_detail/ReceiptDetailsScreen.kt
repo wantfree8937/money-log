@@ -37,8 +37,8 @@ fun ReceiptDetailsScreen(
     onRetake: () -> Unit,
     onBack: () -> Unit
 ) {
-    var editedMerchant by remember { mutableStateOf(if (receipt.id == 0) "" else receipt.storeName) }
-    var editedDate by remember { mutableStateOf(if (receipt.id == 0) "" else receipt.date) }
+    var editedMerchant by remember { mutableStateOf(receipt.storeName) }
+    var editedDate by remember { mutableStateOf(receipt.date) }
     var editedAmount by remember { mutableStateOf(receipt.amount.toString()) }
     var editedCategory by remember { mutableStateOf(receipt.category) }
 
@@ -218,7 +218,7 @@ fun ReceiptDetailsScreen(
                         date = editedDate,
                         amount = editedAmount.toIntOrNull() ?: 0,
                         category = editedCategory,
-                        createdAt = if (receipt.createdAt == 0L) System.currentTimeMillis() else receipt.createdAt
+                        createdAt = System.currentTimeMillis() // 저장/수정 시 항상 최신 시각으로 갱신하여 최상단 정렬
                     ))
                 },
                 modifier = Modifier.fillMaxWidth().height(56.dp),
