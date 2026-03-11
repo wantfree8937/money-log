@@ -3,22 +3,31 @@ package com.example.money_log.presentation.history
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.filled.ChevronLeft
+import androidx.compose.material.icons.filled.ChevronRight
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.RestoreFromTrash
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.example.money_log.domain.model.Receipt
 import com.example.money_log.presentation.home.TransactionItem
+import com.example.money_log.ui.theme.MainGreen
 import com.example.money_log.ui.theme.BackgroundGray
 import com.example.money_log.ui.theme.SurfaceWhite
 import com.example.money_log.presentation.home.MoneyLogBottomNavigation
+import java.text.SimpleDateFormat
+import java.util.*
 
 /**
  * 모든 영수증 내역을 보여주는 화면
@@ -36,6 +45,101 @@ fun HistoryScreen(
     var isSelectionMode by remember { mutableStateOf(false) }
     var showDeleteConfirmDialog by remember { mutableStateOf(false) }
     val selectedIds = remember { mutableStateListOf<Int>() }
+    
+    // 년월 직접 선택기 상태
+    var showMonthPicker by remember { mutableStateOf(false) }
+    val monthPickerSheetState = rememberModalBottomSheetState()
+    
+    // 현재 선택된 년월 (기본값: 이번 달)
+    var selectedMonth by remember { 
+        mutableStateOf(SimpleDateFormat("yyyy-MM", Locale.getDefault()).format(Date())) 
+    }
+
+    // 선택된 월에 해당하는 내역만 필터링
+    val filteredReceipts = receipts.filter { it.date.startsWith(selectedMonth) }
+
+    // 년월 직접 선택 바텀 시트
+    if (showMonthPicker) {
+        ModalBottomSheet(
+            onDismissRequest = { showMonthPicker = false },
+            sheetState = monthPickerSheetState,
+            containerColor = SurfaceWhite
+        ) {
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(bottom = 40.dp, start = 20.dp, end = 20.dp)
+            ) {
+                Text(
+                    "년월 선택",
+                    modifier = Modifier.padding(bottom = 16.dp),
+                    fontWeight = FontWeight.Bold,
+                    style = MaterialTheme.typography.titleMedium
+                )
+                
+                Row(
+                    modifier = Modifier.fillMaxWidth().height(240.dp),
+                    horizontalArrangement = Arrangement.spacedBy(16.dp)
+                ) {
+                    // 년도 선택 (최근 5년 ~ 내년)
+                    val currentYear = Calendar.getInstance().get(Calendar.YEAR)
+                    val years = (currentYear - 4..currentYear + 1).toList()
+                    
+                    LazyColumn(modifier = Modifier.weight(1f)) {
+                        items(years) { year ->
+                            val isSelected = selectedMonth.startsWith(year.toString())
+                            Surface(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .clickable {
+                                        val monthPart = selectedMonth.split("-")[1]
+                                        selectedMonth = "$year-$monthPart"
+                                    },
+                                color = if (isSelected) BackgroundGray else Color.Transparent,
+                                shape = RoundedCornerShape(8.dp)
+                            ) {
+                                Text(
+                                    "${year}년",
+                                    modifier = Modifier.padding(12.dp),
+                                    textAlign = androidx.compose.ui.text.style.TextAlign.Center,
+                                    fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Normal,
+                                    color = if (isSelected) MainGreen else Color.Black
+                                )
+                            }
+                        }
+                    }
+                    
+                    // 월 선택
+                    val months = (1..12).toList()
+                    LazyColumn(modifier = Modifier.weight(1f)) {
+                        items(months) { month ->
+                            val monthStr = "%02d".format(month)
+                            val isSelected = selectedMonth.endsWith(monthStr)
+                            Surface(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .clickable {
+                                        val yearPart = selectedMonth.split("-")[0]
+                                        selectedMonth = "$yearPart-$monthStr"
+                                        showMonthPicker = false
+                                    },
+                                color = if (isSelected) BackgroundGray else Color.Transparent,
+                                shape = RoundedCornerShape(8.dp)
+                            ) {
+                                Text(
+                                    "${month}월",
+                                    modifier = Modifier.padding(12.dp),
+                                    textAlign = androidx.compose.ui.text.style.TextAlign.Center,
+                                    fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Normal,
+                                    color = if (isSelected) MainGreen else Color.Black
+                                )
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
 
     // 삭제 확인 팝업
     if (showDeleteConfirmDialog) {
@@ -114,7 +218,7 @@ fun HistoryScreen(
                 onCameraClick = onCameraClick,
                 currentScreen = "history",
                 onScreenSelected = onScreenSelected
-            )
+              )
         },
         containerColor = BackgroundGray
     ) { padding ->
@@ -123,33 +227,88 @@ fun HistoryScreen(
                 .padding(padding)
                 .fillMaxSize()
         ) {
-            if (receipts.isEmpty()) {
+            // 년월 선택기
+            if (!isSelectionMode) {
+                Surface(
+                    color = SurfaceWhite,
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(horizontal = 20.dp, vertical = 8.dp),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        IconButton(onClick = {
+                            val cal = Calendar.getInstance()
+                            val current = SimpleDateFormat("yyyy-MM", Locale.getDefault()).parse(selectedMonth) ?: Date()
+                            cal.time = current
+                            cal.add(Calendar.MONTH, -1)
+                            selectedMonth = SimpleDateFormat("yyyy-MM", Locale.getDefault()).format(cal.time)
+                        }) {
+                            Icon(Icons.Default.ChevronLeft, contentDescription = "이전 달")
+                        }
+                        
+                        Text(
+                            text = selectedMonth.replace("-", "년 ") + "월",
+                            style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold),
+                            modifier = Modifier
+                                .clip(RoundedCornerShape(8.dp))
+                                .clickable { showMonthPicker = true }
+                                .padding(horizontal = 12.dp, vertical = 4.dp)
+                        )
+                        
+                        IconButton(onClick = {
+                            val cal = Calendar.getInstance()
+                            val current = SimpleDateFormat("yyyy-MM", Locale.getDefault()).parse(selectedMonth) ?: Date()
+                            cal.time = current
+                            cal.add(Calendar.MONTH, 1)
+                            selectedMonth = SimpleDateFormat("yyyy-MM", Locale.getDefault()).format(cal.time)
+                        }) {
+                            Icon(Icons.Default.ChevronRight, contentDescription = "다음 달")
+                        }
+                    }
+                }
+            }
+
+            if (filteredReceipts.isEmpty()) {
                 Box(
                     modifier = Modifier.fillMaxSize(),
-                    contentAlignment = androidx.compose.ui.Alignment.Center
+                    contentAlignment = Alignment.Center
                 ) {
-                    Text("내역이 없습니다.", color = Color.Gray)
+                    Text("${selectedMonth.replace("-", "년 ")}월 내역이 없습니다.", color = Color.Gray)
                 }
             } else {
+                // 내역을 년월별로 그룹화
+                val groupedReceipts = filteredReceipts.groupBy { 
+                    it.date.take(7).replace("-", "년 ") + "월"
+                }
+
                 LazyColumn(
                     modifier = Modifier.fillMaxSize(),
-                    contentPadding = PaddingValues(16.dp),
+                    contentPadding = PaddingValues(bottom = 16.dp),
                     verticalArrangement = Arrangement.spacedBy(12.dp)
                 ) {
-                    items(receipts) { receipt ->
-                        TransactionItem(
-                            receipt = receipt,
-                            onClick = { onReceiptClick(receipt) },
-                            isSelectionMode = isSelectionMode,
-                            isSelected = receipt.id in selectedIds,
-                            onSelectedChange = { selected ->
-                                if (selected) {
-                                    selectedIds.add(receipt.id)
-                                } else {
-                                    selectedIds.remove(receipt.id)
-                                }
+                    groupedReceipts.forEach { (_, monthReceipts) ->
+                        // 해당 월의 내역들
+                        items(monthReceipts) { receipt ->
+                            Box(modifier = Modifier.padding(horizontal = 16.dp)) {
+                                TransactionItem(
+                                    receipt = receipt,
+                                    onClick = { onReceiptClick(receipt) },
+                                    isSelectionMode = isSelectionMode,
+                                    isSelected = receipt.id in selectedIds,
+                                    onSelectedChange = { selected ->
+                                        if (selected) {
+                                            selectedIds.add(receipt.id)
+                                        } else {
+                                            selectedIds.remove(receipt.id)
+                                        }
+                                    }
+                                )
                             }
-                        )
+                        }
                     }
                 }
             }
