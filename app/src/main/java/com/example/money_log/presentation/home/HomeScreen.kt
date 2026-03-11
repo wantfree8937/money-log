@@ -330,13 +330,15 @@ fun TransactionItem(receipt: Receipt, onClick: () -> Unit = {}) {
                     Spacer(modifier = Modifier.width(6.dp))
                     Text(receipt.category, style = MaterialTheme.typography.bodySmall, color = TextGray)
                 }
-                val timeFormat = SimpleDateFormat("yyyy.MM.dd a hh:mm", Locale.KOREAN)
+                val timeFormat = SimpleDateFormat("yyyy.MM.dd HH:mm", Locale.getDefault())
                 val registerTime = timeFormat.format(Date(receipt.createdAt))
                 Text(
-                    "등록 시각: $registerTime", 
+                    "등록: $registerTime", 
                     style = MaterialTheme.typography.labelSmall, 
-                    color = MainGreen.copy(alpha = 0.8f),
-                    modifier = Modifier.padding(top = 2.dp)
+                    color = MainGreen.copy(alpha = 0.7f),
+                    modifier = Modifier.padding(top = 2.dp),
+                    maxLines = 1,
+                    overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis
                 )
             }
             

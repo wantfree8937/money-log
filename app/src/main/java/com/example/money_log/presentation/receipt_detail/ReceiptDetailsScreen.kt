@@ -37,8 +37,8 @@ fun ReceiptDetailsScreen(
     onRetake: () -> Unit,
     onBack: () -> Unit
 ) {
-    var editedMerchant by remember { mutableStateOf(receipt.storeName) }
-    var editedDate by remember { mutableStateOf(receipt.date) }
+    var editedMerchant by remember { mutableStateOf(if (receipt.id == 0) "" else receipt.storeName) }
+    var editedDate by remember { mutableStateOf(if (receipt.id == 0) "" else receipt.date) }
     var editedAmount by remember { mutableStateOf(receipt.amount.toString()) }
     var editedCategory by remember { mutableStateOf(receipt.category) }
 
