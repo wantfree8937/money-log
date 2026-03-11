@@ -34,6 +34,7 @@ import java.util.*
 fun ReceiptDetailsScreen(
     receipt: Receipt,
     onSave: (Receipt) -> Unit,
+    onDelete: (Receipt) -> Unit,
     onRetake: () -> Unit,
     onBack: () -> Unit
 ) {
@@ -41,6 +42,9 @@ fun ReceiptDetailsScreen(
     var editedDate by remember { mutableStateOf(receipt.date) }
     var editedAmount by remember { mutableStateOf(receipt.amount.toString()) }
     var editedCategory by remember { mutableStateOf(receipt.category) }
+
+    // 삭제 확인 팝업 상태
+    var showDeleteDialog by remember { mutableStateOf(false) }
 
     // 날짜 및 카테고리 선택기 상태
     var showDatePicker by remember { mutableStateOf(false) }
@@ -50,6 +54,32 @@ fun ReceiptDetailsScreen(
     
     val categories = listOf("식비", "교통", "쇼핑", "의료", "생활", "주거", "통신", "교육", "기타")
     
+    // 삭제 확인 팝업
+    if (showDeleteDialog) {
+        AlertDialog(
+            onDismissRequest = { showDeleteDialog = false },
+            title = { Text("내역 삭제", fontWeight = FontWeight.Bold) },
+            text = { Text("이 영수증 내역을 정말 삭제하시겠습니까?") },
+            confirmButton = {
+                TextButton(
+                    onClick = {
+                        showDeleteDialog = false
+                        onDelete(receipt)
+                    },
+                    colors = ButtonDefaults.textButtonColors(contentColor = Color.Red)
+                ) {
+                    Text("삭제")
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { showDeleteDialog = false }) {
+                    Text("취소")
+                }
+            },
+            containerColor = SurfaceWhite
+        )
+    }
+
     if (showDatePicker) {
         DatePickerDialog(
             onDismissRequest = { showDatePicker = false },
@@ -131,6 +161,13 @@ fun ReceiptDetailsScreen(
                 navigationIcon = {
                     IconButton(onClick = onBack) {
                         Icon(Icons.Default.ArrowBack, contentDescription = "뒤로가기")
+                    }
+                },
+                actions = {
+                    if (receipt.id != 0) {
+                        IconButton(onClick = { showDeleteDialog = true }) {
+                            Icon(Icons.Default.Delete, contentDescription = "삭제하기", tint = TextGray)
+                        }
                     }
                 },
                 colors = TopAppBarDefaults.topAppBarColors(containerColor = SurfaceWhite)

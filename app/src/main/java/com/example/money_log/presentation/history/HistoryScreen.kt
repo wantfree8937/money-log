@@ -34,7 +34,37 @@ fun HistoryScreen(
     onScreenSelected: (String) -> Unit
 ) {
     var isSelectionMode by remember { mutableStateOf(false) }
+    var showDeleteConfirmDialog by remember { mutableStateOf(false) }
     val selectedIds = remember { mutableStateListOf<Int>() }
+
+    // 삭제 확인 팝업
+    if (showDeleteConfirmDialog) {
+        AlertDialog(
+            onDismissRequest = { showDeleteConfirmDialog = false },
+            title = { Text("내역 삭제", fontWeight = FontWeight.Bold) },
+            text = { Text("선택한 ${selectedIds.size}개의 영수증 내역을 정말 삭제하시겠습니까?") },
+            confirmButton = {
+                TextButton(
+                    onClick = {
+                        showDeleteConfirmDialog = false
+                        val toDelete = receipts.filter { it.id in selectedIds }
+                        onDeleteSelected(toDelete)
+                        isSelectionMode = false
+                        selectedIds.clear()
+                    },
+                    colors = ButtonDefaults.textButtonColors(contentColor = Color.Red)
+                ) {
+                    Text("삭제")
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { showDeleteConfirmDialog = false }) {
+                    Text("취소")
+                }
+            },
+            containerColor = SurfaceWhite
+        )
+    }
 
     // 선택 모드를 종료하고 선택 목록을 초기화하는 함수
     val exitSelectionMode = {
@@ -65,11 +95,7 @@ fun HistoryScreen(
                 actions = {
                     if (isSelectionMode) {
                         if (selectedIds.isNotEmpty()) {
-                            IconButton(onClick = {
-                                val toDelete = receipts.filter { it.id in selectedIds }
-                                onDeleteSelected(toDelete)
-                                exitSelectionMode()
-                            }) {
+                            IconButton(onClick = { showDeleteConfirmDialog = true }) {
                                 Icon(Icons.Default.Delete, contentDescription = "삭제", tint = Color.Red)
                             }
                         }

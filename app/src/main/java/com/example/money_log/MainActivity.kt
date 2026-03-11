@@ -145,6 +145,7 @@ fun MainAppHost(viewModel: MainViewModel) {
             ReceiptDetailsScreen(
                 receipt = receipt,
                 onSave = { viewModel.saveReceipt(it) },
+                onDelete = { viewModel.deleteReceipt(it) },
                 onRetake = { 
                     viewModel.prepareRetake()
                     showCamera = true 
