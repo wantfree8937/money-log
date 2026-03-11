@@ -31,6 +31,7 @@ import kotlinx.coroutines.launch
 import com.example.money_log.presentation.home.HomeScreen
 import com.example.money_log.presentation.camera.CameraScreen
 import com.example.money_log.presentation.history.HistoryScreen
+import com.example.money_log.presentation.statistics.StatisticsScreen
 import com.example.money_log.presentation.receipt_detail.ReceiptDetailsScreen
 
 class MainActivity : ComponentActivity() {
@@ -75,7 +76,7 @@ fun MainAppHost(viewModel: MainViewModel) {
         when {
             parsedReceipt != null -> viewModel.clearParsedReceipt()
             showCamera -> showCamera = false
-            currentScreen == "history" -> currentScreen = "home"
+            currentScreen == "history" || currentScreen == "statistics" -> currentScreen = "home"
             currentScreen == "home" -> showExitDialog = true
         }
     }
@@ -108,6 +109,13 @@ fun MainAppHost(viewModel: MainViewModel) {
                     onReceiptClick = { viewModel.setSelectedReceipt(it) },
                     onBack = { currentScreen = "home" },
                     onCameraClick = { showCamera = true },
+                    onScreenSelected = { currentScreen = it }
+                )
+            }
+            "statistics" -> {
+                StatisticsScreen(
+                    receipts = receipts,
+                    onAddClick = { showCamera = true },
                     onScreenSelected = { currentScreen = it }
                 )
             }

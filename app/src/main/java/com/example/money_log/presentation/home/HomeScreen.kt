@@ -378,10 +378,17 @@ fun MoneyLogBottomNavigation(
         }
 
         NavigationBarItem(
-            selected = false,
-            onClick = {},
-            icon = { Icon(Icons.Default.AccountBalanceWallet, contentDescription = "예산") },
-            label = { Text("예산") }
+            selected = currentScreen == "statistics",
+            onClick = { onScreenSelected("statistics") },
+            icon = { Icon(Icons.Default.BarChart, contentDescription = "통계") },
+            label = { Text("통계") },
+            colors = NavigationBarItemDefaults.colors(
+                selectedIconColor = MainGreen,
+                selectedTextColor = MainGreen,
+                unselectedIconColor = TextGray,
+                unselectedTextColor = TextGray,
+                indicatorColor = Color.Transparent
+            )
         )
         NavigationBarItem(
             selected = false,
