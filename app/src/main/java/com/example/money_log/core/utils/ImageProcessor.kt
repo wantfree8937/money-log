@@ -2,24 +2,26 @@ package com.example.money_log.core.utils
 
 import android.content.Context
 import android.graphics.*
+import android.media.ExifInterface
 import android.util.Log
 import java.io.File
 import java.io.FileOutputStream
+import java.io.IOException
 
 /**
  * OCR 인식률을 높이기 위해 이미지를 전처리(크롭, 그레이스케일, 대비 수정)하는 유틸리티
  */
 object ImageProcessor {
 
-    /**
-     * 이미지를 전처리하고 처리된 파일 경로를 반환합니다.
-     */
     fun processImage(context: Context, inputFile: File): File {
         return try {
-            val bitmap = BitmapFactory.decodeFile(inputFile.absolutePath) ?: return inputFile
+            val originalBitmap = BitmapFactory.decodeFile(inputFile.absolutePath) ?: return inputFile
+            
+            // 0. EXIF 정보를 바탕으로 회전 처리
+            val rotatedBitmap = rotateIfRequired(originalBitmap, inputFile)
             
             // 1. 가이드 영역에 맞게 크롭 (중앙 85% 가로, 0.7 종횡비)
-            val croppedBitmap = cropToGuide(bitmap)
+            val croppedBitmap = cropToGuide(rotatedBitmap)
             
             // 2. 그레이스케일 및 대비 증가
             val processedBitmap = applyFilters(croppedBitmap)
@@ -30,6 +32,8 @@ object ImageProcessor {
                 processedBitmap.compress(Bitmap.CompressFormat.JPEG, 90, out)
             }
             
+            if (originalBitmap != rotatedBitmap) originalBitmap.recycle()
+            rotatedBitmap.recycle()
             croppedBitmap.recycle()
             processedBitmap.recycle()
             
@@ -38,6 +42,31 @@ object ImageProcessor {
             Log.e("ImageProcessor", "이미지 처리 실패", e)
             inputFile
         }
+    }
+
+    private fun rotateIfRequired(bitmap: Bitmap, file: File): Bitmap {
+        val exiv = try {
+            ExifInterface(file.absolutePath)
+        } catch (e: IOException) {
+            return bitmap
+        }
+        
+        val orientation = exiv.getAttributeInt(
+            ExifInterface.TAG_ORIENTATION,
+            ExifInterface.ORIENTATION_NORMAL
+        )
+        
+        val degrees = when (orientation) {
+            ExifInterface.ORIENTATION_ROTATE_90 -> 90f
+            ExifInterface.ORIENTATION_ROTATE_180 -> 180f
+            ExifInterface.ORIENTATION_ROTATE_270 -> 270f
+            else -> 0f
+        }
+        
+        if (degrees == 0f) return bitmap
+        
+        val matrix = Matrix().apply { postRotate(degrees) }
+        return Bitmap.createBitmap(bitmap, 0, 0, bitmap.width, bitmap.height, matrix, true)
     }
 
     private fun cropToGuide(bitmap: Bitmap): Bitmap {

@@ -157,7 +157,7 @@ fun ReceiptDetailsScreen(
                     contentDescription = "영수증 이미지",
                     modifier = Modifier
                         .fillMaxWidth()
-                        .height(240.dp)
+                        .height(480.dp)
                         .clip(RoundedCornerShape(16.dp)),
                     contentScale = ContentScale.Crop
                 )
@@ -165,7 +165,7 @@ fun ReceiptDetailsScreen(
                 Box(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .height(240.dp)
+                        .height(480.dp)
                         .clip(RoundedCornerShape(16.dp))
                         .background(Color.LightGray),
                     contentAlignment = Alignment.Center
