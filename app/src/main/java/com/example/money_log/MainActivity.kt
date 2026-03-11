@@ -5,13 +5,18 @@ import android.content.pm.PackageManager
 import android.net.Uri
 import android.os.Bundle
 import androidx.activity.ComponentActivity
+import androidx.activity.compose.BackHandler
 import androidx.activity.compose.setContent
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.activity.viewModels
 import androidx.compose.foundation.layout.*
+import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.unit.dp
 import androidx.core.content.ContextCompat
 import androidx.core.view.WindowCompat
 import androidx.core.view.WindowInsetsCompat
@@ -61,8 +66,28 @@ fun MainAppHost(viewModel: MainViewModel) {
     val scope = rememberCoroutineScope()
     val context = LocalContext.current
     
-    var showCamera by remember { mutableStateOf(false) }
     var currentScreen by remember { mutableStateOf("home") }
+    var showCamera by remember { mutableStateOf(false) }
+    var showExitDialog by remember { mutableStateOf(false) }
+
+    // 시스템 뒤로가기 버튼 처리
+    BackHandler {
+        when {
+            parsedReceipt != null -> viewModel.clearParsedReceipt()
+            showCamera -> showCamera = false
+            currentScreen == "history" -> currentScreen = "home"
+            currentScreen == "home" -> showExitDialog = true
+        }
+    }
+
+    if (showExitDialog) {
+        ExitConfirmDialog(
+            onConfirm = { 
+                (context as? android.app.Activity)?.finish() 
+            },
+            onDismiss = { showExitDialog = false }
+        )
+    }
 
     Box(modifier = Modifier.fillMaxSize()) {
         when (currentScreen) {
@@ -119,4 +144,31 @@ fun MainAppHost(viewModel: MainViewModel) {
             )
         }
     }
+}
+
+/**
+ * 앱 종료 확인 팝업
+ */
+@Composable
+fun ExitConfirmDialog(onConfirm: () -> Unit, onDismiss: () -> Unit) {
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        title = { Text("앱 종료", fontWeight = FontWeight.Bold) },
+        text = { Text("머니로그를 종료하시겠습니까?") },
+        confirmButton = {
+            Button(
+                onClick = onConfirm,
+                colors = ButtonDefaults.buttonColors(containerColor = com.example.money_log.ui.theme.MainGreen)
+            ) {
+                Text("종료", color = androidx.compose.ui.graphics.Color.White)
+            }
+        },
+        dismissButton = {
+            TextButton(onClick = onDismiss) {
+                Text("취소", color = com.example.money_log.ui.theme.TextGray)
+            }
+        },
+        shape = androidx.compose.foundation.shape.RoundedCornerShape(20.dp),
+        containerColor = com.example.money_log.ui.theme.SurfaceWhite
+    )
 }
