@@ -1,6 +1,8 @@
 package com.example.money_log.presentation.home
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -30,26 +32,16 @@ fun HomeScreen(
 ) {
     Scaffold(
         bottomBar = {
-            MoneyLogBottomNavigation()
+            MoneyLogBottomNavigation(onAddClick)
         },
-        floatingActionButton = {
-            FloatingActionButton(
-                onClick = onAddClick,
-                containerColor = MainGreen,
-                contentColor = Color.White,
-                shape = CircleShape,
-                modifier = Modifier.size(64.dp)
-            ) {
-                Icon(Icons.Default.CameraAlt, contentDescription = "스캔", modifier = Modifier.size(32.dp))
-            }
-        },
-        floatingActionButtonPosition = FabPosition.Center,
         containerColor = BackgroundGray
     ) { padding ->
+        val scrollState = rememberScrollState()
         Column(
             modifier = Modifier
                 .padding(padding)
                 .fillMaxSize()
+                .verticalScroll(scrollState)
                 .padding(horizontal = 16.dp)
         ) {
             // Top Padding for Status Bar if topBar is removed
@@ -318,10 +310,11 @@ fun TransactionItem(receipt: Receipt) {
 }
 
 @Composable
-fun MoneyLogBottomNavigation() {
+fun MoneyLogBottomNavigation(onCameraClick: () -> Unit) {
     NavigationBar(
         containerColor = SurfaceWhite,
-        modifier = Modifier.height(80.dp)
+        modifier = Modifier.height(80.dp),
+        windowInsets = WindowInsets(0, 0, 0, 0)
     ) {
         NavigationBarItem(
             selected = true,
@@ -342,7 +335,28 @@ fun MoneyLogBottomNavigation() {
             icon = { Icon(Icons.Default.History, contentDescription = "내역") },
             label = { Text("내역") }
         )
-        Spacer(Modifier.weight(1f)) // Center space for FAB
+        
+        // Circular Camera Button in the center
+        Box(
+            modifier = Modifier.weight(1f).fillMaxHeight(),
+            contentAlignment = Alignment.Center
+        ) {
+            Surface(
+                onClick = onCameraClick,
+                modifier = Modifier.size(52.dp),
+                shape = CircleShape,
+                color = MainGreen,
+                shadowElevation = 8.dp
+            ) {
+                Icon(
+                    Icons.Default.CameraAlt, 
+                    contentDescription = "스캔", 
+                    tint = Color.White,
+                    modifier = Modifier.padding(12.dp)
+                )
+            }
+        }
+
         NavigationBarItem(
             selected = false,
             onClick = {},
