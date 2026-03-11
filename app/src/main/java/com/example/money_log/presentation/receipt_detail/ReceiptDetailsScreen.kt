@@ -2,7 +2,10 @@ package com.example.money_log.presentation.receipt_detail
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
@@ -34,14 +37,18 @@ fun ReceiptDetailsScreen(
     onRetake: () -> Unit,
     onBack: () -> Unit
 ) {
-    var editedMerchant by remember { mutableStateOf("") }
-    var editedDate by remember { mutableStateOf("") }
+    var editedMerchant by remember { mutableStateOf(receipt.storeName) }
+    var editedDate by remember { mutableStateOf(receipt.date) }
     var editedAmount by remember { mutableStateOf(receipt.amount.toString()) }
     var editedCategory by remember { mutableStateOf(receipt.category) }
 
-    // 날짜 선택기 상태
+    // 날짜 및 카테고리 선택기 상태
     var showDatePicker by remember { mutableStateOf(false) }
+    var showCategoryPicker by remember { mutableStateOf(false) }
     val datePickerState = rememberDatePickerState()
+    val bottomSheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
+    
+    val categories = listOf("식비", "교통", "쇼핑", "의료", "생활", "주거", "통신", "교육", "기타")
     
     if (showDatePicker) {
         DatePickerDialog(
@@ -64,6 +71,56 @@ fun ReceiptDetailsScreen(
             }
         ) {
             DatePicker(state = datePickerState)
+        }
+    }
+
+    if (showCategoryPicker) {
+        ModalBottomSheet(
+            onDismissRequest = { showCategoryPicker = false },
+            sheetState = bottomSheetState,
+            containerColor = SurfaceWhite
+        ) {
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(bottom = 32.dp)
+            ) {
+                Text(
+                    "카테고리 선택",
+                    modifier = Modifier.padding(16.dp),
+                    fontWeight = FontWeight.Bold,
+                    style = MaterialTheme.typography.titleMedium
+                )
+                LazyColumn(
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    items(categories) { category ->
+                        ListItem(
+                            headlineContent = { Text(category) },
+                            leadingContent = {
+                                val icon = when (category) {
+                                    "식비" -> Icons.Default.Restaurant
+                                    "교통" -> Icons.Default.DirectionsCar
+                                    "쇼핑" -> Icons.Default.ShoppingBag
+                                    "의료" -> Icons.Default.MedicalServices
+                                    "생활" -> Icons.Default.CleaningServices
+                                    "주거" -> Icons.Default.Home
+                                    "통신" -> Icons.Default.Smartphone
+                                    "교육" -> Icons.Default.School
+                                    else -> Icons.Default.Category
+                                }
+                                Icon(icon, contentDescription = null, tint = MainGreen)
+                            },
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .clickable {
+                                    editedCategory = category
+                                    showCategoryPicker = false
+                                }
+                        )
+                    }
+                }
+            }
         }
     }
 
@@ -147,7 +204,8 @@ fun ReceiptDetailsScreen(
                 value = editedCategory,
                 onValueChange = { editedCategory = it },
                 icon = Icons.Default.Category,
-                isDropdown = true
+                isDropdown = true,
+                onFieldClick = { showCategoryPicker = true }
             )
 
             Spacer(modifier = Modifier.height(32.dp))
@@ -193,6 +251,7 @@ fun ReceiptInputField(
     onValueChange: (String) -> Unit,
     icon: ImageVector? = null,
     onIconClick: (() -> Unit)? = null,
+    onFieldClick: (() -> Unit)? = null,
     prefix: String? = null,
     isDropdown: Boolean = false
 ) {
@@ -206,13 +265,24 @@ fun ReceiptInputField(
         OutlinedTextField(
             value = value,
             onValueChange = onValueChange,
-            modifier = Modifier.fillMaxWidth(),
+            modifier = Modifier
+                .fillMaxWidth()
+                .let { 
+                    if (onFieldClick != null) it.clickable(onClick = onFieldClick) else it 
+                },
+            enabled = onFieldClick == null,
+            readOnly = onFieldClick != null,
             shape = RoundedCornerShape(12.dp),
             colors = OutlinedTextFieldDefaults.colors(
                 unfocusedContainerColor = SurfaceWhite,
                 focusedContainerColor = SurfaceWhite,
                 unfocusedBorderColor = Color.Transparent,
-                focusedBorderColor = MainGreen
+                focusedBorderColor = MainGreen,
+                disabledBorderColor = Color.Transparent,
+                disabledTextColor = MaterialTheme.colorScheme.onSurface,
+                disabledLabelColor = MaterialTheme.colorScheme.onSurface,
+                disabledPrefixColor = MaterialTheme.colorScheme.onSurface,
+                disabledSuffixColor = MaterialTheme.colorScheme.onSurface
             ),
             trailingIcon = {
                 if (isDropdown) {
