@@ -98,6 +98,9 @@ fun HomeScreen(
             
             // 내역 리스트
             TransactionList(receipts, onReceiptClick)
+            
+            // 하단 네비게이션 바와의 여백
+            Spacer(modifier = Modifier.height(32.dp))
         }
     }
 }
@@ -251,7 +254,7 @@ fun LegendItem(label: String, percent: String, color: Color) {
 @Composable
 fun TransactionList(receipts: List<Receipt>, onReceiptClick: (Receipt) -> Unit) {
     Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
-        receipts.take(5).forEach { receipt ->
+        receipts.take(3).forEach { receipt ->
             TransactionItem(receipt, onClick = { onReceiptClick(receipt) })
         }
     }
