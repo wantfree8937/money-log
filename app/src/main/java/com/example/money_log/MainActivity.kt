@@ -25,6 +25,7 @@ import kotlinx.coroutines.launch
 
 import com.example.money_log.presentation.home.HomeScreen
 import com.example.money_log.presentation.camera.CameraScreen
+import com.example.money_log.presentation.history.HistoryScreen
 import com.example.money_log.presentation.receipt_detail.ReceiptDetailsScreen
 
 class MainActivity : ComponentActivity() {
@@ -61,14 +62,30 @@ fun MainAppHost(viewModel: MainViewModel) {
     val context = LocalContext.current
     
     var showCamera by remember { mutableStateOf(false) }
+    var currentScreen by remember { mutableStateOf("home") }
 
     Box(modifier = Modifier.fillMaxSize()) {
-        HomeScreen(
-            receipts = receipts,
-            monthlyTotal = monthlyTotal,
-            onAddClick = { showCamera = true },
-            onDeleteReceipt = { viewModel.deleteReceipt(it) }
-        )
+        when (currentScreen) {
+            "home" -> {
+                HomeScreen(
+                    receipts = receipts,
+                    monthlyTotal = monthlyTotal,
+                    onAddClick = { showCamera = true },
+                    onDeleteReceipt = { viewModel.deleteReceipt(it) },
+                    onViewAllClick = { currentScreen = "history" },
+                    currentScreen = currentScreen,
+                    onScreenSelected = { currentScreen = it }
+                )
+            }
+            "history" -> {
+                HistoryScreen(
+                    receipts = receipts,
+                    onBack = { currentScreen = "home" },
+                    onCameraClick = { showCamera = true },
+                    onScreenSelected = { currentScreen = it }
+                )
+            }
+        }
 
         if (showCamera) {
             CameraScreen(

@@ -28,11 +28,18 @@ fun HomeScreen(
     receipts: List<Receipt>,
     monthlyTotal: Int,
     onAddClick: () -> Unit,
-    onDeleteReceipt: (Receipt) -> Unit
+    onDeleteReceipt: (Receipt) -> Unit,
+    onViewAllClick: () -> Unit,
+    currentScreen: String = "home",
+    onScreenSelected: (String) -> Unit
 ) {
     Scaffold(
         bottomBar = {
-            MoneyLogBottomNavigation(onAddClick)
+            MoneyLogBottomNavigation(
+                onCameraClick = onAddClick,
+                currentScreen = currentScreen,
+                onScreenSelected = onScreenSelected
+            )
         },
         containerColor = BackgroundGray
     ) { padding ->
@@ -84,7 +91,7 @@ fun HomeScreen(
                     "내역", 
                     style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold)
                 )
-                TextButton(onClick = { /* 전체보기 */ }) {
+                TextButton(onClick = onViewAllClick) {
                     Text("전체보기", color = MainGreen)
                 }
             }
@@ -310,15 +317,19 @@ fun TransactionItem(receipt: Receipt) {
 }
 
 @Composable
-fun MoneyLogBottomNavigation(onCameraClick: () -> Unit) {
+fun MoneyLogBottomNavigation(
+    onCameraClick: () -> Unit,
+    currentScreen: String = "home",
+    onScreenSelected: (String) -> Unit = {}
+) {
     NavigationBar(
         containerColor = SurfaceWhite,
         modifier = Modifier.height(80.dp),
         windowInsets = WindowInsets(0, 0, 0, 0)
     ) {
         NavigationBarItem(
-            selected = true,
-            onClick = {},
+            selected = currentScreen == "home",
+            onClick = { onScreenSelected("home") },
             icon = { Icon(Icons.Default.Home, contentDescription = "홈") },
             label = { Text("홈") },
             colors = NavigationBarItemDefaults.colors(
@@ -330,10 +341,17 @@ fun MoneyLogBottomNavigation(onCameraClick: () -> Unit) {
             )
         )
         NavigationBarItem(
-            selected = false,
-            onClick = {},
+            selected = currentScreen == "history",
+            onClick = { onScreenSelected("history") },
             icon = { Icon(Icons.Default.History, contentDescription = "내역") },
-            label = { Text("내역") }
+            label = { Text("내역") },
+            colors = NavigationBarItemDefaults.colors(
+                selectedIconColor = MainGreen,
+                selectedTextColor = MainGreen,
+                unselectedIconColor = TextGray,
+                unselectedTextColor = TextGray,
+                indicatorColor = Color.Transparent
+            )
         )
         
         // 중앙의 원형 카메라 버튼
