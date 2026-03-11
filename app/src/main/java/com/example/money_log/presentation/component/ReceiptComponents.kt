@@ -1,4 +1,4 @@
-package com.example.money_log.ui.components
+package com.example.money_log.presentation.component
 
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn

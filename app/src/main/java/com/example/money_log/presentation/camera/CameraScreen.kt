@@ -1,4 +1,4 @@
-package com.example.money_log.presentation.ui
+package com.example.money_log.presentation.camera
 
 import androidx.camera.view.PreviewView
 import androidx.compose.animation.core.*
@@ -25,7 +25,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.viewinterop.AndroidView
 import com.example.money_log.core.utils.ReceiptAnalyzer
-import com.example.money_log.ui.camera.CameraManager
+import com.example.money_log.core.utils.CameraManager
 import com.example.money_log.ui.theme.MainGreen
 import java.io.File
 

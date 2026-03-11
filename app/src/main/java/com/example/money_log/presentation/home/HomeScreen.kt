@@ -1,4 +1,4 @@
-package com.example.money_log.presentation.ui
+package com.example.money_log.presentation.home
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
@@ -8,12 +8,13 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.money_log.domain.model.Receipt
@@ -28,39 +29,6 @@ fun HomeScreen(
     onDeleteReceipt: (Receipt) -> Unit
 ) {
     Scaffold(
-        topBar = {
-            TopAppBar(
-                title = { 
-                    Text(
-                        "머니로그", 
-                        style = MaterialTheme.typography.titleLarge.copy(
-                            fontWeight = FontWeight.Bold,
-                            fontSize = 24.sp
-                        ),
-                        modifier = Modifier.fillMaxWidth(),
-                        textAlign = androidx.compose.ui.text.style.TextAlign.Center
-                    ) 
-                },
-                navigationIcon = {
-                    IconButton(onClick = { /* Open Drawer */ }) {
-                        Icon(Icons.Default.Menu, contentDescription = "메뉴")
-                    }
-                },
-                actions = {
-                    IconButton(onClick = { /* Notifications */ }) {
-                        Icon(Icons.Default.Notifications, contentDescription = "알림")
-                    }
-                    IconButton(onClick = { /* Profile */ }) {
-                        Icon(
-                            Icons.Default.AccountCircle, 
-                            contentDescription = "프로필",
-                            modifier = Modifier.size(32.dp)
-                        )
-                    }
-                },
-                colors = TopAppBarDefaults.topAppBarColors(containerColor = BackgroundGray)
-            )
-        },
         bottomBar = {
             MoneyLogBottomNavigation()
         },
@@ -84,6 +52,8 @@ fun HomeScreen(
                 .fillMaxSize()
                 .padding(horizontal = 16.dp)
         ) {
+            // Top Padding for Status Bar if topBar is removed
+            Spacer(modifier = Modifier.statusBarsPadding())
             Spacer(modifier = Modifier.height(16.dp))
             
             // Total Spending Card
@@ -91,10 +61,26 @@ fun HomeScreen(
             
             Spacer(modifier = Modifier.height(24.dp))
             
-            // Category Breakdown (Placeholder for now)
-            CategoryBreakdownCard(monthlyTotal)
+            // Category Breakdown using real data
+            val categoryStats = remember(receipts) {
+                if (receipts.isEmpty() || monthlyTotal == 0) emptyList()
+                else receipts.groupBy { it.category }.map { (cat, list) ->
+                    val catTotal = list.sumOf { it.amount }
+                    val percent = (catTotal.toFloat() / monthlyTotal.toFloat()) * 100f
+                    val color = when (cat) {
+                        "식비" -> CategoryFood
+                        "교통" -> CategoryTransport
+                        "생활용품" -> CategoryShopping
+                        else -> TextGray
+                    }
+                    CategoryData(cat, catTotal, percent, color)
+                }.sortedByDescending { it.amount }
+            }
             
-            Spacer(modifier = Modifier.height(24.dp))
+            if (categoryStats.isNotEmpty()) {
+                CategoryBreakdownCard(monthlyTotal, categoryStats)
+                Spacer(modifier = Modifier.height(24.dp))
+            }
             
             // Recent Transactions Header
             Row(
@@ -174,7 +160,7 @@ fun TotalSpendingCard(total: Int) {
 }
 
 @Composable
-fun CategoryBreakdownCard(total: Int) {
+fun CategoryBreakdownCard(total: Int, stats: List<CategoryData>) {
     Card(
         modifier = Modifier.fillMaxWidth(),
         shape = RoundedCornerShape(24.dp),
@@ -191,44 +177,65 @@ fun CategoryBreakdownCard(total: Int) {
             
             Spacer(modifier = Modifier.height(16.dp))
             
-            // Donut Chart Placeholder (Stylized using Box and CircularProgress)
+            // Donut Chart showing real proportional data
             Box(
                 modifier = Modifier.size(160.dp).align(Alignment.CenterHorizontally),
                 contentAlignment = Alignment.Center
             ) {
+                // Background Track
                 CircularProgressIndicator(
-                    progress = 0.45f,
+                    progress = 1f,
                     modifier = Modifier.fillMaxSize(),
                     strokeWidth = 20.dp,
-                    color = CategoryFood,
-                    trackColor = Color.LightGray.copy(alpha = 0.2f)
-                )
-                CircularProgressIndicator(
-                    progress = 0.25f,
-                    modifier = Modifier.fillMaxSize(),
-                    strokeWidth = 20.dp,
-                    color = CategoryTransport,
+                    color = Color.LightGray.copy(alpha = 0.2f),
                     trackColor = Color.Transparent
                 )
+                
+                // Overlay segments (simplified representation using multiple indicators)
+                var currentCombinedPercent = 0f
+                stats.take(3).forEach { cat ->
+                    val progress = (currentCombinedPercent + cat.percent) / 100f
+                    CircularProgressIndicator(
+                        progress = progress,
+                        modifier = Modifier.fillMaxSize(),
+                        strokeWidth = 20.dp,
+                        color = cat.color,
+                        trackColor = Color.Transparent
+                    )
+                    currentCombinedPercent += cat.percent
+                }
+                
                 Column(horizontalAlignment = Alignment.CenterHorizontally) {
                     Text("₩ %,d".format(total), style = MaterialTheme.typography.headlineSmall.copy(fontWeight = FontWeight.Bold))
                     Text("지출", style = MaterialTheme.typography.labelSmall, color = TextGray)
                 }
             }
             
-            Spacer(modifier = Modifier.height(16.dp))
+            Spacer(modifier = Modifier.height(24.dp))
             
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceEvenly
-            ) {
-                LegendItem("식비", "45%", CategoryFood)
-                LegendItem("교통", "25%", CategoryTransport)
-                LegendItem("쇼핑", "30%", CategoryShopping)
+            // Row-based Legend for readability
+            Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                stats.chunked(3).forEach { rowStats ->
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceEvenly
+                    ) {
+                        rowStats.forEach { cat ->
+                            LegendItem(cat.label, "%.0f%%".format(cat.percent), cat.color)
+                        }
+                    }
+                }
             }
         }
     }
 }
+
+data class CategoryData(
+    val label: String,
+    val amount: Int,
+    val percent: Float,
+    val color: Color
+)
 
 @Composable
 fun LegendItem(label: String, percent: String, color: Color) {

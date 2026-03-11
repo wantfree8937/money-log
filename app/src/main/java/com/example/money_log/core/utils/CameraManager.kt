@@ -1,4 +1,4 @@
-package com.example.money_log.ui.camera
+package com.example.money_log.core.utils
 
 import android.content.Context
 import android.util.Log
@@ -71,7 +71,10 @@ class CameraManager(
 
         val photoFile = File(
             context.externalCacheDir,
-            SimpleDateFormat("yyyyMMdd_HHmmss", Locale.US).format(System.currentTimeMillis()) + ".jpg"
+            SimpleDateFormat(
+                "yyyyMMdd_HHmmss",
+                Locale.US
+            ).format(System.currentTimeMillis()) + ".jpg"
         )
 
         val outputOptions = ImageCapture.OutputFileOptions.Builder(photoFile).build()

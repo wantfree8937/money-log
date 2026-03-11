@@ -4,38 +4,25 @@ import android.Manifest
 import android.content.pm.PackageManager
 import android.net.Uri
 import android.os.Bundle
-import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.activity.viewModels
-import androidx.camera.view.PreviewView
 import androidx.compose.foundation.layout.*
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Add
-import androidx.compose.material3.*
 import androidx.compose.runtime.*
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.platform.LocalLifecycleOwner
-import androidx.compose.ui.unit.dp
-import androidx.compose.ui.viewinterop.AndroidView
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.example.money_log.core.utils.ImageProcessor
 import com.example.money_log.core.utils.OcrManager
 import com.example.money_log.presentation.viewmodel.MainViewModel
-import com.example.money_log.ui.camera.CameraManager
-import com.example.money_log.ui.components.ReceiptList
 import com.example.money_log.ui.theme.MoneyLogTheme
 import kotlinx.coroutines.launch
-import java.io.File
 
-import com.example.money_log.presentation.ui.HomeScreen
-import com.example.money_log.presentation.ui.CameraScreen
-import com.example.money_log.presentation.ui.ReceiptDetailsScreen
+import com.example.money_log.presentation.home.HomeScreen
+import com.example.money_log.presentation.camera.CameraScreen
+import com.example.money_log.presentation.receipt_detail.ReceiptDetailsScreen
 
 class MainActivity : ComponentActivity() {
     private val viewModel: MainViewModel by viewModels()

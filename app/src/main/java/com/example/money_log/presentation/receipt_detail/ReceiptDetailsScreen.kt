@@ -1,4 +1,4 @@
-package com.example.money_log.presentation.ui
+package com.example.money_log.presentation.receipt_detail
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -23,7 +23,6 @@ import androidx.compose.ui.unit.sp
 import com.example.money_log.domain.model.Receipt
 import com.example.money_log.ui.theme.*
 import android.graphics.BitmapFactory
-import java.io.File
 import java.text.SimpleDateFormat
 import java.util.*
 
