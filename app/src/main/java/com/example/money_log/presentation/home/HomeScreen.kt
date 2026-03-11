@@ -28,7 +28,7 @@ fun HomeScreen(
     receipts: List<Receipt>,
     monthlyTotal: Int,
     onAddClick: () -> Unit,
-    onDeleteReceipt: (Receipt) -> Unit,
+    onReceiptClick: (Receipt) -> Unit,
     onViewAllClick: () -> Unit,
     currentScreen: String = "home",
     onScreenSelected: (String) -> Unit
@@ -97,7 +97,7 @@ fun HomeScreen(
             }
             
             // 내역 리스트
-            TransactionList(receipts, onDeleteReceipt)
+            TransactionList(receipts, onReceiptClick)
         }
     }
 }
@@ -249,16 +249,17 @@ fun LegendItem(label: String, percent: String, color: Color) {
 }
 
 @Composable
-fun TransactionList(receipts: List<Receipt>, onDelete: (Receipt) -> Unit) {
+fun TransactionList(receipts: List<Receipt>, onReceiptClick: (Receipt) -> Unit) {
     Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
         receipts.take(5).forEach { receipt ->
-            TransactionItem(receipt)
+            TransactionItem(receipt, onClick = { onReceiptClick(receipt) })
         }
     }
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun TransactionItem(receipt: Receipt) {
+fun TransactionItem(receipt: Receipt, onClick: () -> Unit = {}) {
     val icon = when (receipt.category) {
         "식비" -> Icons.Default.Restaurant
         "교통" -> Icons.Default.DirectionsCar
@@ -283,7 +284,8 @@ fun TransactionItem(receipt: Receipt) {
     Card(
         modifier = Modifier.fillMaxWidth(),
         shape = RoundedCornerShape(20.dp),
-        colors = CardDefaults.cardColors(containerColor = SurfaceWhite)
+        colors = CardDefaults.cardColors(containerColor = SurfaceWhite),
+        onClick = onClick
     ) {
         Row(
             modifier = Modifier.padding(16.dp).fillMaxWidth(),

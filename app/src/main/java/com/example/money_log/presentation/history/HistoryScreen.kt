@@ -24,6 +24,7 @@ import com.example.money_log.presentation.home.MoneyLogBottomNavigation
 @Composable
 fun HistoryScreen(
     receipts: List<Receipt>,
+    onReceiptClick: (Receipt) -> Unit,
     onBack: () -> Unit,
     onCameraClick: () -> Unit,
     onScreenSelected: (String) -> Unit
@@ -69,7 +70,10 @@ fun HistoryScreen(
                     verticalArrangement = Arrangement.spacedBy(12.dp)
                 ) {
                     items(receipts) { receipt ->
-                        TransactionItem(receipt = receipt)
+                        TransactionItem(
+                            receipt = receipt,
+                            onClick = { onReceiptClick(receipt) }
+                        )
                     }
                 }
             }

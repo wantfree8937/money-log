@@ -71,7 +71,7 @@ fun MainAppHost(viewModel: MainViewModel) {
                     receipts = receipts,
                     monthlyTotal = monthlyTotal,
                     onAddClick = { showCamera = true },
-                    onDeleteReceipt = { viewModel.deleteReceipt(it) },
+                    onReceiptClick = { viewModel.setSelectedReceipt(it) },
                     onViewAllClick = { currentScreen = "history" },
                     currentScreen = currentScreen,
                     onScreenSelected = { currentScreen = it }
@@ -80,6 +80,7 @@ fun MainAppHost(viewModel: MainViewModel) {
             "history" -> {
                 HistoryScreen(
                     receipts = receipts,
+                    onReceiptClick = { viewModel.setSelectedReceipt(it) },
                     onBack = { currentScreen = "home" },
                     onCameraClick = { showCamera = true },
                     onScreenSelected = { currentScreen = it }

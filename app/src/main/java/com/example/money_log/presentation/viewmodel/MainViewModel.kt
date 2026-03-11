@@ -65,6 +65,10 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
         _parsedReceipt.value = parsedReceipt
     }
 
+    fun setSelectedReceipt(receipt: Receipt) {
+        _parsedReceipt.value = receipt
+    }
+
     fun saveReceipt(receipt: Receipt) {
         viewModelScope.launch {
             saveReceiptUseCase(receipt)
