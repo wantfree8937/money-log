@@ -1,5 +1,6 @@
 package com.example.money_log.presentation.home
 
+import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
@@ -15,12 +16,17 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.StrokeCap
+import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.money_log.domain.model.Receipt
 import com.example.money_log.ui.theme.*
+import java.text.SimpleDateFormat
+import java.util.Date
+import java.util.Locale
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -69,8 +75,13 @@ fun HomeScreen(
                     val color = when (cat) {
                         "식비" -> CategoryFood
                         "교통" -> CategoryTransport
-                        "생활용품" -> CategoryShopping
-                        else -> TextGray
+                        "쇼핑" -> CategoryShopping
+                        "의료" -> CategoryMedical
+                        "생활" -> CategoryLife
+                        "주거" -> CategoryHousing
+                        "통신" -> CategoryComm
+                        "교육" -> CategoryEdu
+                        else -> CategoryOther
                     }
                     CategoryData(cat, catTotal, percent, color)
                 }.sortedByDescending { it.amount }
@@ -184,27 +195,29 @@ fun CategoryBreakdownCard(total: Int, stats: List<CategoryData>) {
                 modifier = Modifier.size(160.dp).align(Alignment.CenterHorizontally),
                 contentAlignment = Alignment.Center
             ) {
-                // 배경 트랙
-                CircularProgressIndicator(
-                    progress = 1f,
-                    modifier = Modifier.fillMaxSize(),
-                    strokeWidth = 20.dp,
-                    color = Color.LightGray.copy(alpha = 0.2f),
-                    trackColor = Color.Transparent
-                )
-                
-                // 오버레이 세그먼트 (여러 인디케이터를 사용한 단순화된 표현)
-                var currentCombinedPercent = 0f
-                stats.take(3).forEach { cat ->
-                    val progress = (currentCombinedPercent + cat.percent) / 100f
-                    CircularProgressIndicator(
-                        progress = progress,
-                        modifier = Modifier.fillMaxSize(),
-                        strokeWidth = 20.dp,
-                        color = cat.color,
-                        trackColor = Color.Transparent
+                Canvas(modifier = Modifier.fillMaxSize()) {
+                    val strokeWidthPx = 20.dp.toPx()
+                    
+                    // 배경 트랙
+                    drawCircle(
+                        color = Color.LightGray.copy(alpha = 0.2f),
+                        style = Stroke(width = strokeWidthPx)
                     )
-                    currentCombinedPercent += cat.percent
+                    
+                    var startAngle = -90f // 12시 방향 시작
+                    stats.forEach { cat ->
+                        val sweepAngle = (cat.percent / 100f) * 360f
+                        if (sweepAngle > 0) {
+                            drawArc(
+                                color = cat.color,
+                                startAngle = startAngle,
+                                sweepAngle = sweepAngle,
+                                useCenter = false,
+                                style = Stroke(width = strokeWidthPx, cap = StrokeCap.Butt)
+                            )
+                            startAngle += sweepAngle
+                        }
+                    }
                 }
                 
                 Column(horizontalAlignment = Alignment.CenterHorizontally) {
@@ -266,23 +279,28 @@ fun TransactionItem(receipt: Receipt, onClick: () -> Unit = {}) {
     val icon = when (receipt.category) {
         "식비" -> Icons.Default.Restaurant
         "교통" -> Icons.Default.DirectionsCar
-        "생활용품" -> Icons.Default.LocalMall
-        else -> Icons.Default.ShoppingBag
-    }
-    
-    val iconBg = when (receipt.category) {
-        "식비" -> CategoryFood.copy(alpha = 0.1f)
-        "교통" -> CategoryTransport.copy(alpha = 0.1f)
-        "생활용품" -> CategoryShopping.copy(alpha = 0.1f)
-        else -> TextGray.copy(alpha = 0.1f)
+        "쇼핑" -> Icons.Default.ShoppingBag
+        "의료" -> Icons.Default.MedicalServices
+        "생활" -> Icons.Default.CleaningServices
+        "주거" -> Icons.Default.Home
+        "통신" -> Icons.Default.Smartphone
+        "교육" -> Icons.Default.School
+        else -> Icons.Default.Category
     }
     
     val iconColor = when (receipt.category) {
         "식비" -> CategoryFood
         "교통" -> CategoryTransport
-        "생활용품" -> CategoryShopping
-        else -> TextGray
+        "쇼핑" -> CategoryShopping
+        "의료" -> CategoryMedical
+        "생활" -> CategoryLife
+        "주거" -> CategoryHousing
+        "통신" -> CategoryComm
+        "교육" -> CategoryEdu
+        else -> CategoryOther
     }
+
+    val iconBg = iconColor.copy(alpha = 0.1f)
 
     Card(
         modifier = Modifier.fillMaxWidth(),
@@ -305,10 +323,20 @@ fun TransactionItem(receipt: Receipt, onClick: () -> Unit = {}) {
             
             Column(modifier = Modifier.weight(1f)) {
                 Text(receipt.storeName, fontWeight = FontWeight.Bold)
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Text(receipt.date, style = MaterialTheme.typography.bodySmall, color = TextGray)
+                    Spacer(modifier = Modifier.width(6.dp))
+                    Text("•", style = MaterialTheme.typography.bodySmall, color = TextGray.copy(alpha = 0.3f))
+                    Spacer(modifier = Modifier.width(6.dp))
+                    Text(receipt.category, style = MaterialTheme.typography.bodySmall, color = TextGray)
+                }
+                val timeFormat = SimpleDateFormat("yyyy.MM.dd a hh:mm", Locale.KOREAN)
+                val registerTime = timeFormat.format(Date(receipt.createdAt))
                 Text(
-                    "오늘, 오후 12:45 • ${receipt.category}", 
-                    style = MaterialTheme.typography.bodySmall,
-                    color = TextGray
+                    "등록 시각: $registerTime", 
+                    style = MaterialTheme.typography.labelSmall, 
+                    color = MainGreen.copy(alpha = 0.8f),
+                    modifier = Modifier.padding(top = 2.dp)
                 )
             }
             

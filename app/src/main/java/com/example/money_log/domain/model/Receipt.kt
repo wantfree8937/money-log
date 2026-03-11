@@ -10,5 +10,6 @@ data class Receipt(
     val date: String,
     val category: String,
     val paymentMethod: String,
-    val imagePath: String
+    val imagePath: String,
+    val createdAt: Long = 0L
 )

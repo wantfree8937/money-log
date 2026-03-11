@@ -217,7 +217,8 @@ fun ReceiptDetailsScreen(
                         storeName = editedMerchant,
                         date = editedDate,
                         amount = editedAmount.toIntOrNull() ?: 0,
-                        category = editedCategory
+                        category = editedCategory,
+                        createdAt = if (receipt.createdAt == 0L) System.currentTimeMillis() else receipt.createdAt
                     ))
                 },
                 modifier = Modifier.fillMaxWidth().height(56.dp),

@@ -14,5 +14,11 @@ val TextGray = Color(0xFF6C727A)
 val CategoryFood = Color(0xFF5A67D8)
 val CategoryTransport = Color(0xFFECC94B)
 val CategoryShopping = Color(0xFF48BB78)
+val CategoryMedical = Color(0xFFFF7070) // 연한 산호색
+val CategoryLife = Color(0xFFED64A6)
+val CategoryHousing = Color(0xFFFF9F40) // 따뜻한 주황색
+val CategoryComm = Color(0xFF4299E1)
+val CategoryEdu = Color(0xFF9F7AEA)
+val CategoryOther = Color(0xFFA0AEC0)
 
 val ErrorRed = Color(0xFFE53E3E)

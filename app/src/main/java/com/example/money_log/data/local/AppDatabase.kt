@@ -8,7 +8,7 @@ import androidx.room.RoomDatabase
 /**
  * Room 데이터베이스 클래스
  */
-@Database(entities = [ReceiptEntity::class], version = 1, exportSchema = false)
+@Database(entities = [ReceiptEntity::class], version = 2, exportSchema = false)
 abstract class AppDatabase : RoomDatabase() {
     abstract fun receiptDao(): ReceiptDao
 
@@ -22,7 +22,7 @@ abstract class AppDatabase : RoomDatabase() {
                     context.applicationContext,
                     AppDatabase::class.java,
                     "money_log_database"
-                ).build()
+                ).fallbackToDestructiveMigration().build()
                 INSTANCE = instance
                 instance
             }

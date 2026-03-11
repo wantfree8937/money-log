@@ -44,7 +44,8 @@ class ReceiptRepositoryImpl(
         date = date,
         category = category,
         paymentMethod = paymentMethod,
-        imagePath = imagePath
+        imagePath = imagePath,
+        createdAt = createdAt
     )
 
     private fun Receipt.toEntity(): ReceiptEntity = ReceiptEntity(
@@ -54,6 +55,7 @@ class ReceiptRepositoryImpl(
         date = date,
         category = category,
         paymentMethod = paymentMethod,
-        imagePath = imagePath
+        imagePath = imagePath,
+        createdAt = createdAt
     )
 }

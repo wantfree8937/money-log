@@ -15,5 +15,6 @@ data class ReceiptEntity(
     val date: String,
     val category: String,
     val paymentMethod: String,
-    val imagePath: String
+    val imagePath: String,
+    val createdAt: Long = System.currentTimeMillis()
 )
