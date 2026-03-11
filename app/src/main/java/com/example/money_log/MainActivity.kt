@@ -107,6 +107,7 @@ fun MainAppHost(viewModel: MainViewModel) {
                 HistoryScreen(
                     receipts = receipts,
                     onReceiptClick = { viewModel.setSelectedReceipt(it) },
+                    onDeleteSelected = { viewModel.deleteSelectedReceipts(it) },
                     onBack = { currentScreen = "home" },
                     onCameraClick = { showCamera = true },
                     onScreenSelected = { currentScreen = it }
@@ -145,7 +146,7 @@ fun MainAppHost(viewModel: MainViewModel) {
                 receipt = receipt,
                 onSave = { viewModel.saveReceipt(it) },
                 onRetake = { 
-                    viewModel.clearParsedReceipt()
+                    viewModel.prepareRetake()
                     showCamera = true 
                 },
                 onBack = { viewModel.clearParsedReceipt() }

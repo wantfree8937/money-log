@@ -38,6 +38,9 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
     private val _parsedReceipt = MutableStateFlow<Receipt?>(null)
     val parsedReceipt: StateFlow<Receipt?> = _parsedReceipt.asStateFlow()
 
+    // 현재 수정 중인 영수증의 ID (새 영수증이면 0 또는 null)
+    private var currentEditingId: Int? = null
+
     init {
         loadReceipts()
         loadMonthlyTotal()
@@ -61,28 +64,47 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
     }
 
     fun processOcrResult(textLines: List<String>, imagePath: String) {
-        val parsedReceipt = ReceiptParser.parse(textLines, imagePath)
-        _parsedReceipt.value = parsedReceipt
+        val parsed = ReceiptParser.parse(textLines, imagePath)
+        // 만약 기존 영수증을 수정(재촬영) 중이었다면 해당 ID를 유지
+        _parsedReceipt.value = currentEditingId?.let { id ->
+            parsed.copy(id = id)
+        } ?: parsed
     }
 
     fun setSelectedReceipt(receipt: Receipt) {
         _parsedReceipt.value = receipt
+        currentEditingId = receipt.id
     }
 
     fun saveReceipt(receipt: Receipt) {
         viewModelScope.launch {
             saveReceiptUseCase(receipt)
             _parsedReceipt.value = null
+            currentEditingId = null
         }
     }
 
     fun clearParsedReceipt() {
         _parsedReceipt.value = null
+        currentEditingId = null
+    }
+
+    fun prepareRetake() {
+        _parsedReceipt.value = null
+        // currentEditingId는 유지하여 재촬영 후에도 기존 항목 수정이 가능하게 함
     }
 
     fun deleteReceipt(receipt: Receipt) {
         viewModelScope.launch {
             deleteReceiptUseCase(receipt)
+        }
+    }
+
+    fun deleteSelectedReceipts(selectedReceipts: List<Receipt>) {
+        viewModelScope.launch {
+            selectedReceipts.forEach {
+                deleteReceiptUseCase(it)
+            }
         }
     }
 }

@@ -275,17 +275,23 @@ fun TransactionList(receipts: List<Receipt>, onReceiptClick: (Receipt) -> Unit) 
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun TransactionItem(receipt: Receipt, onClick: () -> Unit = {}) {
+fun TransactionItem(
+    receipt: Receipt,
+    onClick: () -> Unit,
+    isSelectionMode: Boolean = false,
+    isSelected: Boolean = false,
+    onSelectedChange: (Boolean) -> Unit = {}
+) {
     val icon = when (receipt.category) {
         "식비" -> Icons.Default.Restaurant
-        "교통" -> Icons.Default.DirectionsCar
+        "교통" -> Icons.Default.DirectionsBus
         "쇼핑" -> Icons.Default.ShoppingBag
         "의료" -> Icons.Default.MedicalServices
-        "생활" -> Icons.Default.CleaningServices
+        "생활" -> Icons.Default.Face
         "주거" -> Icons.Default.Home
-        "통신" -> Icons.Default.Smartphone
-        "교육" -> Icons.Default.School
-        else -> Icons.Default.Category
+        "통신" -> Icons.Default.PhoneIphone
+        "교육" -> Icons.Default.MenuBook
+        else -> Icons.Default.MoreHoriz
     }
     
     val iconColor = when (receipt.category) {
@@ -306,12 +312,20 @@ fun TransactionItem(receipt: Receipt, onClick: () -> Unit = {}) {
         modifier = Modifier.fillMaxWidth(),
         shape = RoundedCornerShape(20.dp),
         colors = CardDefaults.cardColors(containerColor = SurfaceWhite),
-        onClick = onClick
+        onClick = { if (isSelectionMode) onSelectedChange(!isSelected) else onClick() }
     ) {
         Row(
             modifier = Modifier.padding(16.dp).fillMaxWidth(),
             verticalAlignment = Alignment.CenterVertically
         ) {
+            if (isSelectionMode) {
+                Checkbox(
+                    checked = isSelected,
+                    onCheckedChange = onSelectedChange,
+                    colors = CheckboxDefaults.colors(checkedColor = MainGreen),
+                    modifier = Modifier.padding(end = 8.dp)
+                )
+            }
             Box(
                 modifier = Modifier.size(48.dp).clip(RoundedCornerShape(12.dp)).background(iconBg),
                 contentAlignment = Alignment.Center
