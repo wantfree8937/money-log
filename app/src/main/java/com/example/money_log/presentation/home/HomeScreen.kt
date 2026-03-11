@@ -291,7 +291,7 @@ fun TransactionItem(
         "주거" -> Icons.Default.Home
         "통신" -> Icons.Default.PhoneIphone
         "교육" -> Icons.Default.MenuBook
-        else -> Icons.Default.MoreHoriz
+        else -> Icons.Default.Category
     }
     
     val iconColor = when (receipt.category) {
@@ -318,25 +318,30 @@ fun TransactionItem(
             modifier = Modifier.padding(16.dp).fillMaxWidth(),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            if (isSelectionMode) {
-                Checkbox(
-                    checked = isSelected,
-                    onCheckedChange = onSelectedChange,
-                    colors = CheckboxDefaults.colors(checkedColor = MainGreen),
-                    modifier = Modifier.padding(end = 8.dp)
-                )
-            }
             Box(
                 modifier = Modifier.size(48.dp).clip(RoundedCornerShape(12.dp)).background(iconBg),
                 contentAlignment = Alignment.Center
             ) {
-                Icon(icon, contentDescription = null, tint = iconColor)
+                if (isSelectionMode) {
+                    Checkbox(
+                        checked = isSelected,
+                        onCheckedChange = onSelectedChange,
+                        colors = CheckboxDefaults.colors(checkedColor = MainGreen)
+                    )
+                } else {
+                    Icon(icon, contentDescription = null, tint = iconColor)
+                }
             }
             
             Spacer(modifier = Modifier.width(16.dp))
             
             Column(modifier = Modifier.weight(1f)) {
-                Text(receipt.storeName, fontWeight = FontWeight.Bold)
+                Text(
+                    receipt.storeName, 
+                    fontWeight = FontWeight.Bold,
+                    maxLines = 1,
+                    overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis
+                )
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     Text(receipt.date, style = MaterialTheme.typography.bodySmall, color = TextGray)
                     Spacer(modifier = Modifier.width(6.dp))
@@ -349,12 +354,14 @@ fun TransactionItem(
                 Text(
                     "등록: $registerTime", 
                     style = MaterialTheme.typography.labelSmall, 
-                    color = MainGreen.copy(alpha = 0.7f),
+                    color = MainGreen.copy(alpha = 0.6f),
                     modifier = Modifier.padding(top = 2.dp),
                     maxLines = 1,
                     overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis
                 )
             }
+            
+            Spacer(modifier = Modifier.width(8.dp))
             
             Text(
                 "- ₩ %,d".format(receipt.amount), 

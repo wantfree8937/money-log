@@ -100,13 +100,13 @@ fun ReceiptDetailsScreen(
                             leadingContent = {
                                 val icon = when (category) {
                                     "식비" -> Icons.Default.Restaurant
-                                    "교통" -> Icons.Default.DirectionsCar
+                                    "교통" -> Icons.Default.DirectionsBus
                                     "쇼핑" -> Icons.Default.ShoppingBag
                                     "의료" -> Icons.Default.MedicalServices
-                                    "생활" -> Icons.Default.CleaningServices
+                                    "생활" -> Icons.Default.Face
                                     "주거" -> Icons.Default.Home
-                                    "통신" -> Icons.Default.Smartphone
-                                    "교육" -> Icons.Default.School
+                                    "통신" -> Icons.Default.PhoneIphone
+                                    "교육" -> Icons.Default.MenuBook
                                     else -> Icons.Default.Category
                                 }
                                 Icon(icon, contentDescription = null, tint = MainGreen)
