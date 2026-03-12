@@ -23,9 +23,12 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.text.TextRange
+import androidx.compose.ui.text.input.TextFieldValue
 import com.example.money_log.domain.model.Receipt
 import com.example.money_log.ui.theme.*
 import android.graphics.BitmapFactory
+import java.text.DecimalFormat
 import java.text.SimpleDateFormat
 import java.util.*
 
@@ -38,9 +41,17 @@ fun ReceiptDetailsScreen(
     onRetake: () -> Unit,
     onBack: () -> Unit
 ) {
+    // 금액 포맷터 (천 단위 콤마)
+    val amountFormatter = remember { DecimalFormat("#,###") }
+    
     var editedMerchant by remember { mutableStateOf(receipt.storeName) }
     var editedDate by remember { mutableStateOf(receipt.date) }
-    var editedAmount by remember { mutableStateOf(receipt.amount.toString()) }
+    
+    // 초기 금액을 TextFieldValue로 관리 (커서 위치 제어)
+    var editedAmount by remember { 
+        val initialText = if (receipt.amount > 0) amountFormatter.format(receipt.amount) else receipt.amount.toString()
+        mutableStateOf(TextFieldValue(text = initialText, selection = TextRange(initialText.length)))
+    }
     var editedCategory by remember { mutableStateOf(receipt.category) }
 
     // 삭제 확인 팝업 상태
@@ -217,14 +228,14 @@ fun ReceiptDetailsScreen(
             ReceiptInputField(
                 label = "가맹점 이름",
                 value = editedMerchant,
-                onValueChange = { editedMerchant = it },
+                onValueChange = { editedMerchant = it as String },
                 icon = Icons.Default.Store
             )
             
             ReceiptInputField(
                 label = "날짜",
                 value = editedDate,
-                onValueChange = { editedDate = it },
+                onValueChange = { editedDate = it as String },
                 icon = Icons.Default.CalendarToday,
                 onIconClick = { showDatePicker = true }
             )
@@ -232,14 +243,31 @@ fun ReceiptDetailsScreen(
             ReceiptInputField(
                 label = "합계 금액",
                 value = editedAmount,
-                onValueChange = { editedAmount = it },
-                prefix = "₩ "
+                onValueChange = { newValue ->
+                    if (newValue is TextFieldValue) {
+                        // 숫자만 남기기
+                        val digits = newValue.text.filter { it.isDigit() }
+                        if (digits.isEmpty()) {
+                            editedAmount = TextFieldValue(text = "0", selection = TextRange(1))
+                        } else {
+                            // 맨 앞의 0 처리 및 포맷팅
+                            val amountValue = digits.toLongOrNull() ?: 0L
+                            val formatted = amountFormatter.format(amountValue)
+                            // 커서를 항상 텍스트의 마지막에 배치
+                            editedAmount = TextFieldValue(text = formatted, selection = TextRange(formatted.length))
+                        }
+                    }
+                },
+                prefix = "₩ ",
+                keyboardOptions = androidx.compose.foundation.text.KeyboardOptions(
+                    keyboardType = androidx.compose.ui.text.input.KeyboardType.Number
+                )
             )
             
             ReceiptInputField(
                 label = "카테고리",
                 value = editedCategory,
-                onValueChange = { editedCategory = it },
+                onValueChange = { editedCategory = it as String },
                 icon = Icons.Default.Category,
                 isDropdown = true,
                 onFieldClick = { showCategoryPicker = true }
@@ -253,7 +281,7 @@ fun ReceiptDetailsScreen(
                     onSave(receipt.copy(
                         storeName = editedMerchant,
                         date = editedDate,
-                        amount = editedAmount.toIntOrNull() ?: 0,
+                        amount = editedAmount.text.replace(",", "").toIntOrNull() ?: 0,
                         category = editedCategory,
                         createdAt = System.currentTimeMillis() // 저장/수정 시 항상 최신 시각으로 갱신하여 최상단 정렬
                     ))
@@ -285,13 +313,14 @@ fun ReceiptDetailsScreen(
 @Composable
 fun ReceiptInputField(
     label: String,
-    value: String,
-    onValueChange: (String) -> Unit,
+    value: Any, // String 또는 TextFieldValue 허용
+    onValueChange: (Any) -> Unit,
     icon: ImageVector? = null,
     onIconClick: (() -> Unit)? = null,
     onFieldClick: (() -> Unit)? = null,
     prefix: String? = null,
-    isDropdown: Boolean = false
+    isDropdown: Boolean = false,
+    keyboardOptions: androidx.compose.foundation.text.KeyboardOptions = androidx.compose.foundation.text.KeyboardOptions.Default
 ) {
     Column(modifier = Modifier.fillMaxWidth().padding(bottom = 16.dp)) {
         Text(
@@ -300,43 +329,86 @@ fun ReceiptInputField(
             style = MaterialTheme.typography.bodyMedium,
             modifier = Modifier.padding(bottom = 8.dp)
         )
-        OutlinedTextField(
-            value = value,
-            onValueChange = onValueChange,
-            modifier = Modifier
-                .fillMaxWidth()
-                .let { 
-                    if (onFieldClick != null) it.clickable(onClick = onFieldClick) else it 
-                },
-            enabled = onFieldClick == null,
-            readOnly = onFieldClick != null,
-            shape = RoundedCornerShape(12.dp),
-            colors = OutlinedTextFieldDefaults.colors(
-                unfocusedContainerColor = SurfaceWhite,
-                focusedContainerColor = SurfaceWhite,
-                unfocusedBorderColor = Color.Transparent,
-                focusedBorderColor = MainGreen,
-                disabledBorderColor = Color.Transparent,
-                disabledTextColor = MaterialTheme.colorScheme.onSurface,
-                disabledLabelColor = MaterialTheme.colorScheme.onSurface,
-                disabledPrefixColor = MaterialTheme.colorScheme.onSurface,
-                disabledSuffixColor = MaterialTheme.colorScheme.onSurface
-            ),
-            trailingIcon = {
-                if (isDropdown) {
-                    Icon(Icons.Default.ExpandMore, contentDescription = null, tint = MainGreen)
-                } else if (icon != null) {
-                    if (onIconClick != null) {
-                        IconButton(onClick = onIconClick) {
+        if (value is TextFieldValue) {
+            OutlinedTextField(
+                value = value,
+                onValueChange = { onValueChange(it) },
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .let { 
+                        if (onFieldClick != null) it.clickable(onClick = onFieldClick) else it 
+                    },
+                enabled = onFieldClick == null,
+                readOnly = onFieldClick != null,
+                shape = RoundedCornerShape(12.dp),
+                colors = OutlinedTextFieldDefaults.colors(
+                    unfocusedContainerColor = SurfaceWhite,
+                    focusedContainerColor = SurfaceWhite,
+                    unfocusedBorderColor = Color.Transparent,
+                    focusedBorderColor = MainGreen,
+                    disabledBorderColor = Color.Transparent,
+                    disabledTextColor = MaterialTheme.colorScheme.onSurface,
+                    disabledLabelColor = MaterialTheme.colorScheme.onSurface,
+                    disabledPrefixColor = MaterialTheme.colorScheme.onSurface,
+                    disabledSuffixColor = MaterialTheme.colorScheme.onSurface
+                ),
+                trailingIcon = {
+                    if (isDropdown) {
+                        Icon(Icons.Default.ExpandMore, contentDescription = null, tint = MainGreen)
+                    } else if (icon != null) {
+                        if (onIconClick != null) {
+                            IconButton(onClick = onIconClick) {
+                                Icon(icon, contentDescription = null, tint = MainGreen)
+                            }
+                        } else {
                             Icon(icon, contentDescription = null, tint = MainGreen)
                         }
-                    } else {
-                        Icon(icon, contentDescription = null, tint = MainGreen)
                     }
-                }
-            },
-            prefix = prefix?.let { { Text(it, fontWeight = FontWeight.Bold) } },
-            singleLine = true
-        )
+                },
+                prefix = prefix?.let { { Text(it, fontWeight = FontWeight.Bold) } },
+                singleLine = true,
+                keyboardOptions = keyboardOptions
+            )
+        } else {
+            OutlinedTextField(
+                value = value as String,
+                onValueChange = { onValueChange(it as String) },
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .let { 
+                        if (onFieldClick != null) it.clickable(onClick = onFieldClick) else it 
+                    },
+                enabled = onFieldClick == null,
+                readOnly = onFieldClick != null,
+                shape = RoundedCornerShape(12.dp),
+                colors = OutlinedTextFieldDefaults.colors(
+                    unfocusedContainerColor = SurfaceWhite,
+                    focusedContainerColor = SurfaceWhite,
+                    unfocusedBorderColor = Color.Transparent,
+                    focusedBorderColor = MainGreen,
+                    disabledBorderColor = Color.Transparent,
+                    disabledTextColor = MaterialTheme.colorScheme.onSurface,
+                    disabledLabelColor = MaterialTheme.colorScheme.onSurface,
+                    disabledPrefixColor = MaterialTheme.colorScheme.onSurface,
+                    disabledSuffixColor = MaterialTheme.colorScheme.onSurface
+                ),
+                trailingIcon = {
+                    if (isDropdown) {
+                        Icon(Icons.Default.ExpandMore, contentDescription = null, tint = MainGreen)
+                    } else if (icon != null) {
+                        if (onIconClick != null) {
+                            IconButton(onClick = onIconClick) {
+                                Icon(icon, contentDescription = null, tint = MainGreen)
+                            }
+                        } else {
+                            Icon(icon, contentDescription = null, tint = MainGreen)
+                        }
+                    }
+                },
+                prefix = prefix?.let { { Text(it, fontWeight = FontWeight.Bold) } },
+                singleLine = true,
+                keyboardOptions = keyboardOptions
+            )
+        }
     }
 }
