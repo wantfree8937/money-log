@@ -117,6 +117,8 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
     fun deleteReceipt(receipt: Receipt) {
         viewModelScope.launch {
             deleteReceiptUseCase(receipt)
+            _parsedReceipt.value = null
+            currentEditingId = null
         }
     }
 

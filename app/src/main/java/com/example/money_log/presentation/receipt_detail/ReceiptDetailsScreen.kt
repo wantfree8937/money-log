@@ -76,6 +76,7 @@ fun ReceiptDetailsScreen(
                     onClick = {
                         showDeleteDialog = false
                         onDelete(receipt)
+                        onBack() // 삭제 후 뒤로가기
                     },
                     colors = ButtonDefaults.textButtonColors(contentColor = Color.Red)
                 ) {
