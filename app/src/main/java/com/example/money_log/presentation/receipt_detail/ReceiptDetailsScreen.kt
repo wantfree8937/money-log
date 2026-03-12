@@ -195,34 +195,35 @@ fun ReceiptDetailsScreen(
         ) {
             Spacer(modifier = Modifier.height(16.dp))
 
-            // 영수증 이미지 미리보기
-            val bitmap = remember(receipt.imagePath) {
-                BitmapFactory.decodeFile(receipt.imagePath)
-            }
-            if (bitmap != null) {
-                Image(
-                    bitmap = bitmap.asImageBitmap(),
-                    contentDescription = "영수증 이미지",
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .height(480.dp)
-                        .clip(RoundedCornerShape(16.dp)),
-                    contentScale = ContentScale.Crop
-                )
-            } else {
-                Box(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .height(480.dp)
-                        .clip(RoundedCornerShape(16.dp))
-                        .background(Color.LightGray),
-                    contentAlignment = Alignment.Center
-                ) {
-                    Text("이미지를 찾을 수 없습니다")
+            // 영수증 이미지 미리보기 (이미지가 있는 경우에만 표시)
+            if (receipt.imagePath.isNotEmpty()) {
+                val bitmap = remember(receipt.imagePath) {
+                    BitmapFactory.decodeFile(receipt.imagePath)
                 }
+                if (bitmap != null) {
+                    Image(
+                        bitmap = bitmap.asImageBitmap(),
+                        contentDescription = "영수증 이미지",
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(480.dp)
+                            .clip(RoundedCornerShape(16.dp)),
+                        contentScale = ContentScale.Crop
+                    )
+                } else {
+                    Box(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(480.dp)
+                            .clip(RoundedCornerShape(16.dp))
+                            .background(Color.LightGray),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Text("이미지를 불러올 수 없습니다")
+                    }
+                }
+                Spacer(modifier = Modifier.height(24.dp))
             }
-
-            Spacer(modifier = Modifier.height(24.dp))
 
             // 입력 필드들
             ReceiptInputField(
@@ -295,13 +296,15 @@ fun ReceiptDetailsScreen(
             
             Spacer(modifier = Modifier.height(12.dp))
             
-            Button(
-                onClick = onRetake,
-                modifier = Modifier.fillMaxWidth().height(56.dp),
-                shape = RoundedCornerShape(12.dp),
-                colors = ButtonDefaults.buttonColors(containerColor = LightGreen, contentColor = PrimaryGreen)
-            ) {
-                Text("다시 촬영", fontWeight = FontWeight.Bold, fontSize = 16.sp)
+            if (receipt.imagePath.isNotEmpty()) {
+                Button(
+                    onClick = onRetake,
+                    modifier = Modifier.fillMaxWidth().height(56.dp),
+                    shape = RoundedCornerShape(12.dp),
+                    colors = ButtonDefaults.buttonColors(containerColor = LightGreen, contentColor = PrimaryGreen)
+                ) {
+                    Text("다시 촬영", fontWeight = FontWeight.Bold, fontSize = 16.sp)
+                }
             }
             
             Spacer(modifier = Modifier.height(32.dp))

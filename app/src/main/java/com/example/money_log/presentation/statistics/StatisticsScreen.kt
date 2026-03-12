@@ -8,11 +8,15 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
+import androidx.compose.material.icons.filled.CameraAlt
+import androidx.compose.material.icons.filled.EditNote
+import androidx.compose.material.icons.filled.Add
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -36,13 +40,63 @@ import java.util.Locale
 fun StatisticsScreen(
     receipts: List<Receipt>,
     onAddClick: () -> Unit,
+    onManualEntryClick: () -> Unit,
+    currentMonth: String = "",
     currentScreen: String = "statistics",
     onScreenSelected: (String) -> Unit
 ) {
+    var showAddOptions by remember { mutableStateOf(false) }
+    val addOptionsSheetState = rememberModalBottomSheetState()
+
+    // 추가 옵션 선택 바텀 시트
+    if (showAddOptions) {
+        ModalBottomSheet(
+            onDismissRequest = { showAddOptions = false },
+            sheetState = addOptionsSheetState,
+            containerColor = SurfaceWhite
+        ) {
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(bottom = 32.dp)
+            ) {
+                Text(
+                    "내역 추가 방법 선택",
+                    modifier = Modifier.padding(16.dp),
+                    fontWeight = FontWeight.Bold,
+                    style = MaterialTheme.typography.titleMedium
+                )
+                
+                ListItem(
+                    headlineContent = { Text("영수증 촬영") },
+                    supportingContent = { Text("영수증을 촬영하고 내역을 입력합니다") },
+                    leadingContent = { 
+                        Icon(Icons.Default.CameraAlt, contentDescription = null, tint = MainGreen) 
+                    },
+                    modifier = Modifier.clickable {
+                        showAddOptions = false
+                        onAddClick()
+                    }
+                )
+                
+                ListItem(
+                    headlineContent = { Text("직접 입력") },
+                    supportingContent = { Text("가맹점, 금액 등을 직접 입력합니다") },
+                    leadingContent = { 
+                        Icon(Icons.Default.EditNote, contentDescription = null, tint = MainGreen) 
+                    },
+                    modifier = Modifier.clickable {
+                        showAddOptions = false
+                        onManualEntryClick()
+                    }
+                )
+            }
+        }
+    }
     Scaffold(
         bottomBar = {
             MoneyLogBottomNavigation(
-                onCameraClick = onAddClick,
+                onAddButtonClick = { showAddOptions = true },
                 currentScreen = currentScreen,
                 onScreenSelected = onScreenSelected
             )

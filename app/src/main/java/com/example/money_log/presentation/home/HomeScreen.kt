@@ -5,13 +5,16 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
+import androidx.compose.material.icons.filled.CameraAlt
+import androidx.compose.material.icons.filled.EditNote
+import androidx.compose.material.icons.filled.Add
 import androidx.compose.material3.*
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.remember
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -34,15 +37,65 @@ fun HomeScreen(
     receipts: List<Receipt>,
     monthlyTotal: Int,
     onAddClick: () -> Unit,
+    onManualEntryClick: () -> Unit,
     onReceiptClick: (Receipt) -> Unit,
     onViewAllClick: () -> Unit,
     currentScreen: String = "home",
     onScreenSelected: (String) -> Unit
 ) {
+    var showAddOptions by remember { mutableStateOf(false) }
+    val bottomSheetState = rememberModalBottomSheetState()
+    
+    // 추가 옵션 선택 바텀 시트
+    if (showAddOptions) {
+        ModalBottomSheet(
+            onDismissRequest = { showAddOptions = false },
+            sheetState = bottomSheetState,
+            containerColor = SurfaceWhite
+        ) {
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(bottom = 32.dp)
+            ) {
+                Text(
+                    "내역 추가 방법 선택",
+                    modifier = Modifier.padding(16.dp),
+                    fontWeight = FontWeight.Bold,
+                    style = MaterialTheme.typography.titleMedium
+                )
+                
+                ListItem(
+                    headlineContent = { Text("영수증 촬영") },
+                    supportingContent = { Text("영수증을 촬영하고 내역을 입력합니다") },
+                    leadingContent = { 
+                        Icon(Icons.Default.CameraAlt, contentDescription = null, tint = MainGreen) 
+                    },
+                    modifier = Modifier.clickable {
+                        showAddOptions = false
+                        onAddClick()
+                    }
+                )
+                
+                ListItem(
+                    headlineContent = { Text("직접 입력") },
+                    supportingContent = { Text("가맹점, 금액 등을 직접 입력합니다") },
+                    leadingContent = { 
+                        Icon(Icons.Default.EditNote, contentDescription = null, tint = MainGreen) 
+                    },
+                    modifier = Modifier.clickable {
+                        showAddOptions = false
+                        onManualEntryClick()
+                    }
+                )
+            }
+        }
+    }
+
     Scaffold(
         bottomBar = {
             MoneyLogBottomNavigation(
-                onCameraClick = onAddClick,
+                onAddButtonClick = { showAddOptions = true },
                 currentScreen = currentScreen,
                 onScreenSelected = onScreenSelected
             )
@@ -374,7 +427,7 @@ fun TransactionItem(
 
 @Composable
 fun MoneyLogBottomNavigation(
-    onCameraClick: () -> Unit,
+    onAddButtonClick: () -> Unit,
     currentScreen: String = "home",
     onScreenSelected: (String) -> Unit = {}
 ) {
@@ -410,21 +463,21 @@ fun MoneyLogBottomNavigation(
             )
         )
         
-        // 중앙의 원형 카메라 버튼
+        // 중앙의 원형 추가 버튼
         Box(
             modifier = Modifier.weight(1f).fillMaxHeight(),
             contentAlignment = Alignment.Center
         ) {
             Surface(
-                onClick = onCameraClick,
+                onClick = onAddButtonClick,
                 modifier = Modifier.size(52.dp),
                 shape = CircleShape,
                 color = MainGreen,
                 shadowElevation = 8.dp
             ) {
                 Icon(
-                    Icons.Default.CameraAlt, 
-                    contentDescription = "스캔", 
+                    Icons.Default.Add, 
+                    contentDescription = "추가", 
                     tint = Color.White,
                     modifier = Modifier.padding(12.dp)
                 )

@@ -12,6 +12,9 @@ import androidx.compose.material.icons.filled.ChevronRight
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.RestoreFromTrash
+import androidx.compose.material.icons.filled.CameraAlt
+import androidx.compose.material.icons.filled.EditNote
+import androidx.compose.material.icons.filled.Add
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -40,11 +43,16 @@ fun HistoryScreen(
     onDeleteSelected: (List<Receipt>) -> Unit,
     onBack: () -> Unit,
     onCameraClick: () -> Unit,
+    onManualEntryClick: () -> Unit,
     onScreenSelected: (String) -> Unit
 ) {
     var isSelectionMode by remember { mutableStateOf(false) }
     var showDeleteConfirmDialog by remember { mutableStateOf(false) }
     val selectedIds = remember { mutableStateListOf<Int>() }
+    
+    // 추가 옵션 선택 바텀 시트
+    var showAddOptions by remember { mutableStateOf(false) }
+    val addOptionsSheetState = rememberModalBottomSheetState()
     
     // 년월 직접 선택기 상태
     var showMonthPicker by remember { mutableStateOf(false) }
@@ -57,6 +65,52 @@ fun HistoryScreen(
 
     // 선택된 월에 해당하는 내역만 필터링
     val filteredReceipts = receipts.filter { it.date.startsWith(selectedMonth) }
+
+    // 추가 옵션 선택 바텀 시트 UI
+    if (showAddOptions) {
+        ModalBottomSheet(
+            onDismissRequest = { showAddOptions = false },
+            sheetState = addOptionsSheetState,
+            containerColor = SurfaceWhite
+        ) {
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(bottom = 32.dp)
+            ) {
+                Text(
+                    "내역 추가 방법 선택",
+                    modifier = Modifier.padding(16.dp),
+                    fontWeight = FontWeight.Bold,
+                    style = MaterialTheme.typography.titleMedium
+                )
+                
+                ListItem(
+                    headlineContent = { Text("영수증 촬영") },
+                    supportingContent = { Text("영수증을 촬영하고 내역을 입력합니다") },
+                    leadingContent = { 
+                        Icon(Icons.Default.CameraAlt, contentDescription = null, tint = MainGreen) 
+                    },
+                    modifier = Modifier.clickable {
+                        showAddOptions = false
+                        onCameraClick()
+                    }
+                )
+                
+                ListItem(
+                    headlineContent = { Text("직접 입력") },
+                    supportingContent = { Text("가맹점, 금액 등을 직접 입력합니다") },
+                    leadingContent = { 
+                        Icon(Icons.Default.EditNote, contentDescription = null, tint = MainGreen) 
+                    },
+                    modifier = Modifier.clickable {
+                        showAddOptions = false
+                        onManualEntryClick()
+                    }
+                )
+            }
+        }
+    }
 
     // 년월 직접 선택 바텀 시트
     if (showMonthPicker) {
@@ -215,7 +269,7 @@ fun HistoryScreen(
         bottomBar = {
             // 현재 화면 상태를 반영한 하단 네비게이션 바
             MoneyLogBottomNavigation(
-                onCameraClick = onCameraClick,
+                onAddButtonClick = { showAddOptions = true },
                 currentScreen = "history",
                 onScreenSelected = onScreenSelected
               )

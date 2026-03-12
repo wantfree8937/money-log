@@ -97,6 +97,23 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
         // currentEditingId는 유지하여 재촬영 후에도 기존 항목 수정이 가능하게 함
     }
 
+    /**
+     * 직접 입력을 위해 빈 영수증 데이터 생성
+     */
+    fun startManualEntry() {
+        val today = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).format(Date())
+        _parsedReceipt.value = Receipt(
+            storeName = "",
+            amount = 0,
+            date = today,
+            category = "기타",
+            paymentMethod = "카드",
+            imagePath = "", // 직접 입력 시 이미지는 없음
+            createdAt = System.currentTimeMillis()
+        )
+        currentEditingId = null
+    }
+
     fun deleteReceipt(receipt: Receipt) {
         viewModelScope.launch {
             deleteReceiptUseCase(receipt)

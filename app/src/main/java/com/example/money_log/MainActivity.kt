@@ -97,6 +97,7 @@ fun MainAppHost(viewModel: MainViewModel) {
                     receipts = receipts,
                     monthlyTotal = monthlyTotal,
                     onAddClick = { showCamera = true },
+                    onManualEntryClick = { viewModel.startManualEntry() },
                     onReceiptClick = { viewModel.setSelectedReceipt(it) },
                     onViewAllClick = { currentScreen = "history" },
                     currentScreen = currentScreen,
@@ -110,6 +111,7 @@ fun MainAppHost(viewModel: MainViewModel) {
                     onDeleteSelected = { viewModel.deleteSelectedReceipts(it) },
                     onBack = { currentScreen = "home" },
                     onCameraClick = { showCamera = true },
+                    onManualEntryClick = { viewModel.startManualEntry() },
                     onScreenSelected = { currentScreen = it }
                 )
             }
@@ -117,6 +119,8 @@ fun MainAppHost(viewModel: MainViewModel) {
                 StatisticsScreen(
                     receipts = receipts,
                     onAddClick = { showCamera = true },
+                    onManualEntryClick = { viewModel.startManualEntry() },
+                    currentMonth = java.text.SimpleDateFormat("yyyy-MM", java.util.Locale.getDefault()).format(java.util.Date()),
                     onScreenSelected = { currentScreen = it }
                 )
             }
