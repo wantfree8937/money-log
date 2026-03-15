@@ -13,16 +13,15 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
+import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.material.icons.filled.*
-import androidx.compose.material.icons.filled.CameraAlt
-import androidx.compose.material.icons.filled.EditNote
-import androidx.compose.material.icons.filled.Add
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.text.font.FontWeight
@@ -260,7 +259,7 @@ fun StatisticsScreen(
                 Spacer(modifier = Modifier.height(24.dp))
 
                 // 월별 추이 그래프
-                MonthlyTrendCard()
+                MonthlyTrendCard(receipts, selectedMonth)
 
                 Spacer(modifier = Modifier.height(24.dp))
 
@@ -322,7 +321,39 @@ fun StatsSummaryCard(receipts: List<Receipt>) {
 }
 
 @Composable
-fun MonthlyTrendCard() {
+fun MonthlyTrendCard(receipts: List<Receipt>, selectedMonth: String) {
+    val sdf = SimpleDateFormat("yyyy-MM", Locale.getDefault())
+    val monthLabelSdf = SimpleDateFormat("M월", Locale.getDefault())
+    
+    // 최근 6개월 데이터 계산 (선택된 월 포함 이전 5개월)
+    val trendData = remember(receipts, selectedMonth) {
+        val calendar = Calendar.getInstance()
+        val (year, month) = selectedMonth.split("-").map { it.toInt() }
+        calendar.set(year, month - 1, 1) // 0-indexed month
+        
+        val months = mutableListOf<String>()
+        val totals = mutableListOf<Long>()
+        
+        for (i in 5 downTo 0) {
+            val tempCal = calendar.clone() as Calendar
+            tempCal.add(Calendar.MONTH, -i)
+            val monthKey = sdf.format(tempCal.time)
+            val monthLabel = monthLabelSdf.format(tempCal.time)
+            
+            val total = receipts.filter { it.date.startsWith(monthKey) }.sumOf { it.amount.toLong() }
+            
+            months.add(monthLabel)
+            totals.add(total)
+        }
+        months to totals
+    }
+    
+    val (months, totals) = trendData
+    val maxTotal = totals.maxOrNull()?.coerceAtLeast(1L) ?: 1L
+    
+    // 길게 누른 바의 인덱스 관리 (-1은 선택 없음)
+    var pressedIndex by remember { mutableStateOf(-1) }
+
     Card(
         modifier = Modifier.fillMaxWidth(),
         shape = RoundedCornerShape(24.dp),
@@ -335,26 +366,89 @@ fun MonthlyTrendCard() {
             )
             Spacer(modifier = Modifier.height(24.dp))
             
-            // 단순한 바 차트 구현
             Row(
-                modifier = Modifier.height(150.dp).fillMaxWidth(),
+                modifier = Modifier
+                    .height(200.dp) // 전체 높이를 조금 더 상향
+                    .fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceEvenly,
                 verticalAlignment = Alignment.Bottom
             ) {
-                val data = listOf(0.4f, 0.6f, 0.5f, 0.8f, 0.3f, 0.9f)
-                val months = listOf("10월", "11월", "12월", "1월", "2월", "3월")
-                
-                data.forEachIndexed { index, value ->
-                    Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                totals.forEachIndexed { index, total ->
+                    val ratio = total.toFloat() / maxTotal
+                    val isCurrentMonth = index == 5
+                    val isPressed = pressedIndex == index
+                    
+                    Column(
+                        horizontalAlignment = Alignment.CenterHorizontally,
+                        modifier = Modifier
+                            .weight(1f)
+                            .fillMaxHeight()
+                            .pointerInput(Unit) {
+                                detectTapGestures(
+                                    onPress = {
+                                        pressedIndex = index
+                                        tryAwaitRelease()
+                                        pressedIndex = -1
+                                    },
+                                    onLongPress = {
+                                        pressedIndex = index
+                                    }
+                                )
+                            }
+                    ) {
+                        // 차트 바 영역 (고정 높이)
                         Box(
                             modifier = Modifier
-                                .width(20.dp)
-                                .fillMaxHeight(value)
-                                .clip(RoundedCornerShape(topStart = 6.dp, topEnd = 6.dp))
-                                .background(if (index == 5) MainGreen else MainGreen.copy(alpha = 0.3f))
-                        )
+                                .weight(1f) // 남은 공간을 차지하여 바를 아래로 밀어냄
+                                .fillMaxWidth(),
+                            contentAlignment = Alignment.BottomCenter
+                        ) {
+                            Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                                // 금액 표시
+                                if (isPressed) {
+                                    Surface(
+                                        color = MainGreen,
+                                        shape = RoundedCornerShape(4.dp),
+                                        modifier = Modifier.padding(bottom = 4.dp)
+                                    ) {
+                                        Text(
+                                            text = "${NumberFormat.getNumberInstance(Locale.KOREA).format(total)}원",
+                                            fontSize = 9.sp,
+                                            color = Color.White,
+                                            fontWeight = FontWeight.Bold,
+                                            modifier = Modifier.padding(horizontal = 4.dp, vertical = 2.dp)
+                                        )
+                                    }
+                                }
+                                
+                                // 실제 지출을 나타내는 바
+                                Box(
+                                    modifier = Modifier
+                                        .width(18.dp)
+                                        .fillMaxHeight(ratio.coerceAtLeast(0.05f))
+                                        .clip(RoundedCornerShape(topStart = 6.dp, topEnd = 6.dp))
+                                        .background(
+                                            if (isPressed) MainGreen 
+                                            else if (isCurrentMonth) MainGreen.copy(alpha = 0.6f) 
+                                            else MainGreen.copy(alpha = 0.2f)
+                                        )
+                                )
+                            }
+                        }
+                        
                         Spacer(modifier = Modifier.height(8.dp))
-                        Text(months[index], fontSize = 10.sp, color = TextGray)
+                        
+                        // 월 라벨
+                        Text(
+                            months[index], 
+                            fontSize = 10.sp, 
+                            color = if (isPressed || isCurrentMonth) MainGreen else TextGray,
+                            fontWeight = if (isPressed || isCurrentMonth) FontWeight.Bold else FontWeight.Normal,
+                            textAlign = TextAlign.Center
+                        )
+                        
+                        // 아래쪽 터치 영역 확장을 위한 스페이서
+                        Spacer(modifier = Modifier.height(12.dp))
                     }
                 }
             }
