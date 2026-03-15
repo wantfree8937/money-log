@@ -33,6 +33,8 @@ import com.example.money_log.domain.model.Receipt
 import com.example.money_log.presentation.home.MoneyLogBottomNavigation
 import com.example.money_log.ui.theme.*
 import java.text.NumberFormat
+import java.text.SimpleDateFormat
+import java.util.*
 import java.util.Locale
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -41,12 +43,23 @@ fun StatisticsScreen(
     receipts: List<Receipt>,
     onAddClick: () -> Unit,
     onManualEntryClick: () -> Unit,
-    currentMonth: String = "",
     currentScreen: String = "statistics",
     onScreenSelected: (String) -> Unit
 ) {
     var showAddOptions by remember { mutableStateOf(false) }
     val addOptionsSheetState = rememberModalBottomSheetState()
+
+    // 년월 직접 선택기 상태
+    var showMonthPicker by remember { mutableStateOf(false) }
+    val monthPickerSheetState = rememberModalBottomSheetState()
+    
+    // 현재 선택된 년월 (기본값: 이번 달)
+    var selectedMonth by remember { 
+        mutableStateOf(SimpleDateFormat("yyyy-MM", Locale.getDefault()).format(Date())) 
+    }
+
+    // 선택된 월에 해당하는 내역만 필터링
+    val filteredReceipts = receipts.filter { it.date.startsWith(selectedMonth) }
 
     // 추가 옵션 선택 바텀 시트
     if (showAddOptions) {
@@ -93,6 +106,90 @@ fun StatisticsScreen(
             }
         }
     }
+
+    // 년월 직접 선택 바텀 시트 (HistoryScreen에서 이식)
+    if (showMonthPicker) {
+        ModalBottomSheet(
+            onDismissRequest = { showMonthPicker = false },
+            sheetState = monthPickerSheetState,
+            containerColor = SurfaceWhite
+        ) {
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(bottom = 40.dp, start = 20.dp, end = 20.dp)
+            ) {
+                Text(
+                    "년월 선택",
+                    modifier = Modifier.padding(bottom = 16.dp),
+                    fontWeight = FontWeight.Bold,
+                    style = MaterialTheme.typography.titleMedium
+                )
+                
+                Row(
+                    modifier = Modifier.fillMaxWidth().height(240.dp),
+                    horizontalArrangement = Arrangement.spacedBy(16.dp)
+                ) {
+                    // 년도 선택
+                    val currentYear = Calendar.getInstance().get(Calendar.YEAR)
+                    val years = (currentYear - 4..currentYear + 1).toList()
+                    
+                    LazyColumn(modifier = Modifier.weight(1f)) {
+                        items(years) { year ->
+                            val isSelected = selectedMonth.startsWith(year.toString())
+                            Surface(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .clickable {
+                                        val monthPart = selectedMonth.split("-")[1]
+                                        selectedMonth = "$year-$monthPart"
+                                    },
+                                color = if (isSelected) BackgroundGray else Color.Transparent,
+                                shape = RoundedCornerShape(8.dp)
+                            ) {
+                                Text(
+                                    "${year}년",
+                                    modifier = Modifier.padding(12.dp),
+                                    textAlign = TextAlign.Center,
+                                    fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Normal,
+                                    color = if (isSelected) MainGreen else Color.Black
+                                )
+                            }
+                        }
+                    }
+                    
+                    // 월 선택
+                    val months = (1..12).toList()
+                    LazyColumn(modifier = Modifier.weight(1f)) {
+                        items(months) { month ->
+                            val monthStr = "%02d".format(month)
+                            val isSelected = selectedMonth.endsWith(monthStr)
+                            Surface(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .clickable {
+                                        val yearPart = selectedMonth.split("-")[0]
+                                        selectedMonth = "$yearPart-$monthStr"
+                                        showMonthPicker = false
+                                    },
+                                color = if (isSelected) BackgroundGray else Color.Transparent,
+                                shape = RoundedCornerShape(8.dp)
+                            ) {
+                                Text(
+                                    "${month}월",
+                                    modifier = Modifier.padding(12.dp),
+                                    textAlign = TextAlign.Center,
+                                    fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Normal,
+                                    color = if (isSelected) MainGreen else Color.Black
+                                )
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+
     Scaffold(
         bottomBar = {
             MoneyLogBottomNavigation(
@@ -114,7 +211,7 @@ fun StatisticsScreen(
             Spacer(modifier = Modifier.statusBarsPadding())
             Spacer(modifier = Modifier.height(16.dp))
 
-            // 상단 타이틀 및 월 선택 (임시)
+            // 상단 타이틀 및 월 선택
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceBetween,
@@ -127,33 +224,50 @@ fun StatisticsScreen(
                 Surface(
                     shape = RoundedCornerShape(12.dp),
                     color = SurfaceWhite,
-                    onClick = { /* 월 선택 로직 */ }
+                    modifier = Modifier.clickable { showMonthPicker = true }
                 ) {
                     Row(
                         modifier = Modifier.padding(horizontal = 12.dp, vertical = 6.dp),
                         verticalAlignment = Alignment.CenterVertically
                     ) {
-                        Text("2026년 3월", style = MaterialTheme.typography.bodyMedium)
-                        Icon(Icons.Default.ArrowDropDown, contentDescription = null)
+                        Text(
+                            text = selectedMonth.replace("-", "년 ") + "월",
+                            style = MaterialTheme.typography.bodyMedium.copy(fontWeight = FontWeight.Bold),
+                            color = MainGreen
+                        )
+                        Icon(Icons.Default.ArrowDropDown, contentDescription = null, tint = MainGreen)
                     }
                 }
             }
 
             Spacer(modifier = Modifier.height(24.dp))
 
-            // 요약 카드
-            StatsSummaryCard(receipts)
+            if (filteredReceipts.isEmpty()) {
+                Box(
+                    modifier = Modifier.fillMaxWidth().height(300.dp),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Text(
+                        "${selectedMonth.replace("-", "년 ")}월 내역이 없습니다.",
+                        color = Color.Gray,
+                        textAlign = TextAlign.Center
+                    )
+                }
+            } else {
+                // 요약 카드
+                StatsSummaryCard(filteredReceipts)
 
-            Spacer(modifier = Modifier.height(24.dp))
+                Spacer(modifier = Modifier.height(24.dp))
 
-            // 월별 추이 그래프
-            MonthlyTrendCard()
+                // 월별 추이 그래프
+                MonthlyTrendCard()
 
-            Spacer(modifier = Modifier.height(24.dp))
+                Spacer(modifier = Modifier.height(24.dp))
 
-            // 카테고리별 상세 분석
-            CategoryAnalysisCard(receipts)
-            
+                // 카테고리별 상세 분석
+                CategoryAnalysisCard(filteredReceipts)
+            }
+
             Spacer(modifier = Modifier.height(32.dp))
         }
     }

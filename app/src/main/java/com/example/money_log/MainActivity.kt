@@ -120,7 +120,6 @@ fun MainAppHost(viewModel: MainViewModel) {
                     receipts = receipts,
                     onAddClick = { showCamera = true },
                     onManualEntryClick = { viewModel.startManualEntry() },
-                    currentMonth = java.text.SimpleDateFormat("yyyy-MM", java.util.Locale.getDefault()).format(java.util.Date()),
                     onScreenSelected = { currentScreen = it }
                 )
             }
