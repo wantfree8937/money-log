@@ -15,17 +15,12 @@ private val Context.dataStore: DataStore<Preferences> by preferencesDataStore(na
 class SettingsDataStore(private val context: Context) {
 
     companion object {
-        val START_DAY = intPreferencesKey("start_day")
         val AUTO_SAVE = booleanPreferencesKey("auto_save")
         val DARK_MODE = stringPreferencesKey("dark_mode") // "system", "light", "dark"
         val LANGUAGE = stringPreferencesKey("language") // "ko", "en"
         val CUSTOM_CATEGORIES = stringSetPreferencesKey("custom_categories")
     }
 
-    // 월 시작일 (기본값: 1)
-    val startDay: Flow<Int> = context.dataStore.data.map { preferences ->
-        preferences[START_DAY] ?: 1
-    }
 
     // 자동 저장 여부 (기본값: false)
     val autoSave: Flow<Boolean> = context.dataStore.data.map { preferences ->
@@ -47,11 +42,6 @@ class SettingsDataStore(private val context: Context) {
         preferences[CUSTOM_CATEGORIES]?.toList() ?: listOf("식비", "교통", "쇼핑", "의료", "생활", "주거", "통신", "교육", "기타")
     }
 
-    suspend fun updateStartDay(day: Int) {
-        context.dataStore.edit { preferences ->
-            preferences[START_DAY] = day
-        }
-    }
 
     suspend fun updateAutoSave(enabled: Boolean) {
         context.dataStore.edit { preferences ->

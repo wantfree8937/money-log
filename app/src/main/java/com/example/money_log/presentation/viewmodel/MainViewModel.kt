@@ -44,7 +44,6 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
     val parsedReceipt: StateFlow<Receipt?> = _parsedReceipt.asStateFlow()
 
     // 설정 상태 노출
-    val startDay = settingsDataStore.startDay.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), 1)
     val autoSave = settingsDataStore.autoSave.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), false)
     val darkMode = settingsDataStore.darkMode.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), "system")
     val language = settingsDataStore.language.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), "ko")
@@ -59,7 +58,7 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
     }
 
     // 설정 업데이트 함수들
-    fun updateStartDay(day: Int) = viewModelScope.launch { settingsDataStore.updateStartDay(day) }
+
     fun updateAutoSave(enabled: Boolean) = viewModelScope.launch { settingsDataStore.updateAutoSave(enabled) }
     fun updateDarkMode(mode: String) = viewModelScope.launch { settingsDataStore.updateDarkMode(mode) }
     fun updateLanguage(lang: String) = viewModelScope.launch { settingsDataStore.updateLanguage(lang) }
@@ -95,42 +94,25 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
     @OptIn(kotlinx.coroutines.ExperimentalCoroutinesApi::class)
     private fun observeMonthlyTotal() {
         viewModelScope.launch {
-            startDay.flatMapLatest { day ->
-                val (startDate, endDate) = calculateDateRange(day)
-                getMonthlyTotalUseCase(startDate, endDate)
-            }.collect {
+            val (startDate, endDate) = calculateDateRange()
+            getMonthlyTotalUseCase(startDate, endDate).collect {
                 _monthlyTotal.value = it
             }
         }
     }
 
     /**
-     * 설정된 시작일에 따른 이번 달 날짜 범위 계산
-     * 예: 시작일이 25일이고 오늘이 3월 10일이면, 범위는 2월 25일 ~ 3월 24일
+     * 이번 달의 첫날과 마지막 날 계산 (1일 ~ 말일)
      */
-    private fun calculateDateRange(startDay: Int): Pair<String, String> {
+    private fun calculateDateRange(): Pair<String, String> {
         val calendar = Calendar.getInstance()
-        val today = calendar.get(Calendar.DAY_OF_MONTH)
         val sdf = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault())
 
         val startCal = Calendar.getInstance()
-        val endCal = Calendar.getInstance()
+        startCal.set(Calendar.DAY_OF_MONTH, 1)
 
-        if (today < startDay) {
-            // 아직 시작일이 안 지났으면 지난달 시작일부터 이번달 종료일까지
-            startCal.add(Calendar.MONTH, -1)
-            startCal.set(Calendar.DAY_OF_MONTH, startDay)
-            
-            endCal.set(Calendar.DAY_OF_MONTH, startDay)
-            endCal.add(Calendar.DAY_OF_MONTH, -1)
-        } else {
-            // 시작일이 지났으면 이번달 시작일부터 다음달 종료일까지
-            startCal.set(Calendar.DAY_OF_MONTH, startDay)
-            
-            endCal.add(Calendar.MONTH, 1)
-            endCal.set(Calendar.DAY_OF_MONTH, startDay)
-            endCal.add(Calendar.DAY_OF_MONTH, -1)
-        }
+        val endCal = Calendar.getInstance()
+        endCal.set(Calendar.DAY_OF_MONTH, endCal.getActualMaximum(Calendar.DAY_OF_MONTH))
 
         return sdf.format(startCal.time) to sdf.format(endCal.time)
     }

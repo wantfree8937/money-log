@@ -24,11 +24,9 @@ import com.example.money_log.ui.theme.*
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun SettingsScreen(
-    startDay: Int,
     autoSave: Boolean,
     darkMode: String,
     language: String,
-    onStartDayChange: (Int) -> Unit,
     onAutoSaveChange: (Boolean) -> Unit,
     onDarkModeChange: (String) -> Unit,
     onLanguageChange: (String) -> Unit,
@@ -36,39 +34,10 @@ fun SettingsScreen(
     onExportClick: () -> Unit,
     onBack: () -> Unit
 ) {
-    var showStartDayDialog by remember { mutableStateOf(false) }
+
     var showDarkModeDialog by remember { mutableStateOf(false) }
     var showLanguageDialog by remember { mutableStateOf(false) }
 
-    if (showStartDayDialog) {
-        AlertDialog(
-            onDismissRequest = { showStartDayDialog = false },
-            title = { Text("월 시작일 선택", fontWeight = FontWeight.Bold) },
-            text = {
-                Column(modifier = Modifier.verticalScroll(rememberScrollState())) {
-                    (1..28).forEach { day ->
-                        Text(
-                            text = "${day}일",
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .clickable {
-                                    onStartDayChange(day)
-                                    showStartDayDialog = false
-                                }
-                                .padding(vertical = 12.dp, horizontal = 16.dp),
-                            style = MaterialTheme.typography.bodyLarge
-                        )
-                    }
-                }
-            },
-            confirmButton = {},
-            dismissButton = {
-                TextButton(onClick = { showStartDayDialog = false }) {
-                    Text("취소")
-                }
-            }
-        )
-    }
 
     if (showDarkModeDialog) {
         val options = listOf("system" to "시스템 설정", "light" to "라이트 모드", "dark" to "다크 모드")
@@ -161,12 +130,7 @@ fun SettingsScreen(
         ) {
             // 가계부 설정 섹션
             SettingsSection(title = "가계부 설정") {
-                SettingsItem(
-                    icon = Icons.Default.CalendarToday,
-                    title = "월 시작일 설정",
-                    value = "${startDay}일",
-                    onClick = { showStartDayDialog = true }
-                )
+
                 SettingsItem(
                     icon = Icons.Default.Category,
                     title = "카테고리 편집",

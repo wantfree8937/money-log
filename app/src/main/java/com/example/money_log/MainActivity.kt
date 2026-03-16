@@ -83,7 +83,7 @@ fun MainAppHost(viewModel: MainViewModel) {
     val parsedReceipt by viewModel.parsedReceipt.collectAsStateWithLifecycle()
     
     // 설정값 구독
-    val startDay by viewModel.startDay.collectAsStateWithLifecycle()
+
     val autoSave by viewModel.autoSave.collectAsStateWithLifecycle()
     val darkMode by viewModel.darkMode.collectAsStateWithLifecycle()
     val language by viewModel.language.collectAsStateWithLifecycle()
@@ -148,11 +148,9 @@ fun MainAppHost(viewModel: MainViewModel) {
             }
             "settings" -> {
                 SettingsScreen(
-                    startDay = startDay,
                     autoSave = autoSave,
                     darkMode = darkMode,
                     language = language,
-                    onStartDayChange = { viewModel.updateStartDay(it) },
                     onAutoSaveChange = { viewModel.updateAutoSave(it) },
                     onDarkModeChange = { viewModel.updateDarkMode(it) },
                     onLanguageChange = { viewModel.updateLanguage(it) },
