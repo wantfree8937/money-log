@@ -489,45 +489,86 @@ fun CategoryAnalysisCard(receipts: List<Receipt>) {
 
 @Composable
 fun CategoryProgressItem(category: String, amount: Int, percentage: Float) {
-    val formatter = NumberFormat.getCurrencyInstance(Locale.KOREA)
-    val icon = when (category) {
-        "식비" -> Icons.Default.Restaurant
-        "교통" -> Icons.Default.DirectionsCar
-        "쇼핑" -> Icons.Default.ShoppingBag
-        "기타" -> Icons.Default.Category
-        else -> Icons.Default.Payments
+    val formatter = NumberFormat.getNumberInstance(Locale.KOREA)
+    val animatedProgress by animateFloatAsState(
+        targetValue = percentage,
+        animationSpec = tween(durationMillis = 1000),
+        label = "progressAnimation"
+    )
+    
+    val (icon, color) = when (category) {
+        "식비" -> Icons.Default.Restaurant to CategoryFood
+        "교통" -> Icons.Default.DirectionsBus to CategoryTransport
+        "쇼핑" -> Icons.Default.ShoppingBag to CategoryShopping
+        "의료" -> Icons.Default.MedicalServices to CategoryMedical
+        "생활" -> Icons.Default.Face to CategoryLife
+        "주거" -> Icons.Default.Home to CategoryHousing
+        "통신" -> Icons.Default.PhoneIphone to CategoryComm
+        "교육" -> Icons.Default.MenuBook to CategoryEdu
+        else -> Icons.Default.Category to CategoryOther
     }
     
-    Column {
+    Column(modifier = Modifier.padding(vertical = 4.dp)) {
         Row(
             modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.SpaceBetween,
             verticalAlignment = Alignment.CenterVertically
         ) {
             Row(verticalAlignment = Alignment.CenterVertically) {
-                Icon(icon, contentDescription = null, tint = MainGreen, modifier = Modifier.size(18.dp))
-                Spacer(modifier = Modifier.width(8.dp))
-                Text(category, style = MaterialTheme.typography.bodyMedium.copy(fontWeight = FontWeight.Medium))
+                Surface(
+                    color = color.copy(alpha = 0.1f),
+                    shape = CircleShape,
+                    modifier = Modifier.size(32.dp)
+                ) {
+                    Icon(
+                        icon, 
+                        contentDescription = null, 
+                        tint = color, 
+                        modifier = Modifier.padding(7.dp)
+                    )
+                }
+                Spacer(modifier = Modifier.width(12.dp))
+                Column {
+                    Text(
+                        category, 
+                        style = MaterialTheme.typography.bodyMedium.copy(fontWeight = FontWeight.Bold),
+                        color = Color.Black
+                    )
+                    Text(
+                        "${(percentage * 100).toInt()}%",
+                        fontSize = 11.sp,
+                        color = TextGray
+                    )
+                }
             }
             Text(
-                formatter.format(amount),
-                style = MaterialTheme.typography.bodyMedium.copy(fontWeight = FontWeight.Bold)
+                "₩${formatter.format(amount)}",
+                style = MaterialTheme.typography.bodyMedium.copy(fontWeight = FontWeight.Bold),
+                color = color
             )
         }
-        Spacer(modifier = Modifier.height(8.dp))
-        LinearProgressIndicator(
-            progress = percentage,
-            modifier = Modifier.fillMaxWidth().height(8.dp).clip(CircleShape),
-            color = MainGreen,
-            trackColor = MainGreen.copy(alpha = 0.1f)
-        )
-        Spacer(modifier = Modifier.height(4.dp))
-        Text(
-            "${(percentage * 100).toInt()}%",
-            modifier = Modifier.fillMaxWidth(),
-            textAlign = TextAlign.End,
-            fontSize = 11.sp,
-            color = TextGray
-        )
+        
+        Spacer(modifier = Modifier.height(12.dp))
+        
+        // 커스텀 애니메이션 바
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(10.dp)
+                .clip(CircleShape)
+                .background(color.copy(alpha = 0.05f))
+        ) {
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth(animatedProgress)
+                    .fillMaxHeight()
+                    .clip(CircleShape)
+                    .background(
+                        brush = androidx.compose.ui.graphics.Brush.horizontalGradient(
+                            colors = listOf(color.copy(alpha = 0.7f), color)
+                        )
+                    )
+            )
+        }
     }
 }

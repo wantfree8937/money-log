@@ -11,6 +11,8 @@ import com.example.money_log.domain.usecase.*
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.SharingStarted
+import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import java.text.SimpleDateFormat
 import java.util.*
@@ -23,6 +25,8 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
     private val repository = ReceiptRepositoryImpl(
         AppDatabase.getDatabase(application).receiptDao()
     )
+
+    private val settingsDataStore = com.example.money_log.core.settings.SettingsDataStore(application)
 
     private val getReceiptsUseCase = GetReceiptsUseCase(repository)
     private val saveReceiptUseCase = SaveReceiptUseCase(repository)
@@ -38,6 +42,12 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
     private val _parsedReceipt = MutableStateFlow<Receipt?>(null)
     val parsedReceipt: StateFlow<Receipt?> = _parsedReceipt.asStateFlow()
 
+    // 설정 상태 노출
+    val startDay = settingsDataStore.startDay.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), 1)
+    val autoSave = settingsDataStore.autoSave.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), false)
+    val darkMode = settingsDataStore.darkMode.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), "system")
+    val language = settingsDataStore.language.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), "ko")
+
     // 현재 수정 중인 영수증의 ID (새 영수증이면 0 또는 null)
     private var currentEditingId: Int? = null
 
@@ -45,6 +55,12 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
         loadReceipts()
         loadMonthlyTotal()
     }
+
+    // 설정 업데이트 함수들
+    fun updateStartDay(day: Int) = viewModelScope.launch { settingsDataStore.updateStartDay(day) }
+    fun updateAutoSave(enabled: Boolean) = viewModelScope.launch { settingsDataStore.updateAutoSave(enabled) }
+    fun updateDarkMode(mode: String) = viewModelScope.launch { settingsDataStore.updateDarkMode(mode) }
+    fun updateLanguage(lang: String) = viewModelScope.launch { settingsDataStore.updateLanguage(lang) }
 
     private fun loadReceipts() {
         viewModelScope.launch {
