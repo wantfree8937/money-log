@@ -11,5 +11,5 @@ interface ReceiptRepository {
     suspend fun saveReceipt(receipt: Receipt)
     suspend fun deleteReceipt(receipt: Receipt)
     suspend fun getReceiptById(id: Int): Receipt?
-    fun getMonthlyTotal(month: String): Flow<Int>
+    fun getTotalInDateRange(startDate: String, endDate: String): Flow<Int>
 }

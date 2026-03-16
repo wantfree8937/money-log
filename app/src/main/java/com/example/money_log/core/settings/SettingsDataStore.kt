@@ -42,6 +42,11 @@ class SettingsDataStore(private val context: Context) {
         preferences[LANGUAGE] ?: "ko"
     }
 
+    // 커스텀 카테고리 (기본값: 기존 9개 항목)
+    val categories: Flow<List<String>> = context.dataStore.data.map { preferences ->
+        preferences[CUSTOM_CATEGORIES]?.toList() ?: listOf("식비", "교통", "쇼핑", "의료", "생활", "주거", "통신", "교육", "기타")
+    }
+
     suspend fun updateStartDay(day: Int) {
         context.dataStore.edit { preferences ->
             preferences[START_DAY] = day
@@ -63,6 +68,12 @@ class SettingsDataStore(private val context: Context) {
     suspend fun updateLanguage(lang: String) {
         context.dataStore.edit { preferences ->
             preferences[LANGUAGE] = lang
+        }
+    }
+
+    suspend fun updateCategories(categories: List<String>) {
+        context.dataStore.edit { preferences ->
+            preferences[CUSTOM_CATEGORIES] = categories.toSet()
         }
     }
 }

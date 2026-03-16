@@ -36,6 +36,108 @@ fun SettingsScreen(
     onExportClick: () -> Unit,
     onBack: () -> Unit
 ) {
+    var showStartDayDialog by remember { mutableStateOf(false) }
+    var showDarkModeDialog by remember { mutableStateOf(false) }
+    var showLanguageDialog by remember { mutableStateOf(false) }
+
+    if (showStartDayDialog) {
+        AlertDialog(
+            onDismissRequest = { showStartDayDialog = false },
+            title = { Text("월 시작일 선택", fontWeight = FontWeight.Bold) },
+            text = {
+                Column(modifier = Modifier.verticalScroll(rememberScrollState())) {
+                    (1..28).forEach { day ->
+                        Text(
+                            text = "${day}일",
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .clickable {
+                                    onStartDayChange(day)
+                                    showStartDayDialog = false
+                                }
+                                .padding(vertical = 12.dp, horizontal = 16.dp),
+                            style = MaterialTheme.typography.bodyLarge
+                        )
+                    }
+                }
+            },
+            confirmButton = {},
+            dismissButton = {
+                TextButton(onClick = { showStartDayDialog = false }) {
+                    Text("취소")
+                }
+            }
+        )
+    }
+
+    if (showDarkModeDialog) {
+        val options = listOf("system" to "시스템 설정", "light" to "라이트 모드", "dark" to "다크 모드")
+        AlertDialog(
+            onDismissRequest = { showDarkModeDialog = false },
+            title = { Text("다크모드 설정", fontWeight = FontWeight.Bold) },
+            text = {
+                Column {
+                    options.forEach { (mode, label) ->
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .clickable {
+                                    onDarkModeChange(mode)
+                                    showDarkModeDialog = false
+                                }
+                                .padding(vertical = 12.dp, horizontal = 16.dp)
+                        ) {
+                            RadioButton(selected = darkMode == mode, onClick = null)
+                            Spacer(modifier = Modifier.width(12.dp))
+                            Text(label, style = MaterialTheme.typography.bodyLarge)
+                        }
+                    }
+                }
+            },
+            confirmButton = {},
+            dismissButton = {
+                TextButton(onClick = { showDarkModeDialog = false }) {
+                    Text("취소")
+                }
+            }
+        )
+    }
+
+    if (showLanguageDialog) {
+        val options = listOf("ko" to "한국어", "en" to "English")
+        AlertDialog(
+            onDismissRequest = { showLanguageDialog = false },
+            title = { Text("언어 설정", fontWeight = FontWeight.Bold) },
+            text = {
+                Column {
+                    options.forEach { (lang, label) ->
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .clickable {
+                                    onLanguageChange(lang)
+                                    showLanguageDialog = false
+                                }
+                                .padding(vertical = 12.dp, horizontal = 16.dp)
+                        ) {
+                            RadioButton(selected = language == lang, onClick = null)
+                            Spacer(modifier = Modifier.width(12.dp))
+                            Text(label, style = MaterialTheme.typography.bodyLarge)
+                        }
+                    }
+                }
+            },
+            confirmButton = {},
+            dismissButton = {
+                TextButton(onClick = { showLanguageDialog = false }) {
+                    Text("취소")
+                }
+            }
+        )
+    }
+
     Scaffold(
         topBar = {
             TopAppBar(
@@ -63,7 +165,7 @@ fun SettingsScreen(
                     icon = Icons.Default.CalendarToday,
                     title = "월 시작일 설정",
                     value = "${startDay}일",
-                    onClick = { /* 월 시작일 선택 다이얼로그 등 추후 구현 */ }
+                    onClick = { showStartDayDialog = true }
                 )
                 SettingsItem(
                     icon = Icons.Default.Category,
@@ -108,13 +210,13 @@ fun SettingsScreen(
                         "dark" -> "다크 모드"
                         else -> "시스템 설정"
                     },
-                    onClick = { /* 다크모드 선택 다이얼로그 */ }
+                    onClick = { showDarkModeDialog = true }
                 )
                 SettingsItem(
                     icon = Icons.Default.Language,
                     title = "언어 설정",
                     value = if (language == "ko") "한국어" else "English",
-                    onClick = { /* 언어 선택 다이얼로그 */ }
+                    onClick = { showLanguageDialog = true }
                 )
             }
             

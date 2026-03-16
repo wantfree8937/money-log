@@ -32,8 +32,8 @@ class ReceiptRepositoryImpl(
         return dao.getReceiptById(id)?.toDomain()
     }
 
-    override fun getMonthlyTotal(month: String): Flow<Int> {
-        return dao.getMonthlyTotal(month).map { it ?: 0 }
+    override fun getTotalInDateRange(startDate: String, endDate: String): Flow<Int> {
+        return dao.getTotalInDateRange(startDate, endDate).map { it ?: 0 }
     }
 
     // Mapper functions

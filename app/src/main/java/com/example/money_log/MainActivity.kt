@@ -27,12 +27,15 @@ import com.example.money_log.core.utils.OcrManager
 import com.example.money_log.presentation.viewmodel.MainViewModel
 import com.example.money_log.ui.theme.MoneyLogTheme
 import kotlinx.coroutines.launch
+import java.util.Locale
 
 import com.example.money_log.presentation.home.HomeScreen
 import com.example.money_log.presentation.camera.CameraScreen
 import com.example.money_log.presentation.history.HistoryScreen
 import com.example.money_log.presentation.statistics.StatisticsScreen
 import com.example.money_log.presentation.receipt_detail.ReceiptDetailsScreen
+import com.example.money_log.presentation.settings.SettingsScreen
+import com.example.money_log.presentation.settings.CategoryEditScreen
 
 class MainActivity : ComponentActivity() {
     private val viewModel: MainViewModel by viewModels()
@@ -52,7 +55,21 @@ class MainActivity : ComponentActivity() {
         controller.hide(WindowInsetsCompat.Type.navigationBars())
 
         setContent {
-            MoneyLogTheme {
+            val darkMode by viewModel.darkMode.collectAsStateWithLifecycle()
+            val language by viewModel.language.collectAsStateWithLifecycle()
+            
+            // 언어 설정 반영
+            val context = LocalContext.current
+            LaunchedEffect(language) {
+                val locale = if (language == "en") Locale.ENGLISH else Locale.KOREAN
+                val config = context.resources.configuration
+                config.setLocale(locale)
+                context.createConfigurationContext(config)
+                // 실제 상용 앱에서는 AppCompatDelegate 등을 써서 리스타트 없이 처리하지만, 
+                // 여기서는 간단한 구현을 위해 상태 변경만 반영합니다.
+            }
+
+            MoneyLogTheme(darkMode = darkMode) {
                 MainAppHost(viewModel)
             }
         }
@@ -64,6 +81,12 @@ fun MainAppHost(viewModel: MainViewModel) {
     val receipts by viewModel.receipts.collectAsStateWithLifecycle()
     val monthlyTotal by viewModel.monthlyTotal.collectAsStateWithLifecycle()
     val parsedReceipt by viewModel.parsedReceipt.collectAsStateWithLifecycle()
+    
+    // 설정값 구독
+    val startDay by viewModel.startDay.collectAsStateWithLifecycle()
+    val autoSave by viewModel.autoSave.collectAsStateWithLifecycle()
+    val darkMode by viewModel.darkMode.collectAsStateWithLifecycle()
+    val language by viewModel.language.collectAsStateWithLifecycle()
     val scope = rememberCoroutineScope()
     val context = LocalContext.current
     
@@ -123,6 +146,30 @@ fun MainAppHost(viewModel: MainViewModel) {
                     onScreenSelected = { currentScreen = it }
                 )
             }
+            "settings" -> {
+                SettingsScreen(
+                    startDay = startDay,
+                    autoSave = autoSave,
+                    darkMode = darkMode,
+                    language = language,
+                    onStartDayChange = { viewModel.updateStartDay(it) },
+                    onAutoSaveChange = { viewModel.updateAutoSave(it) },
+                    onDarkModeChange = { viewModel.updateDarkMode(it) },
+                    onLanguageChange = { viewModel.updateLanguage(it) },
+                    onCategoryEditClick = { currentScreen = "category_edit" },
+                    onExportClick = { viewModel.exportReceiptsToCsv(context) },
+                    onBack = { currentScreen = "home" }
+                )
+            }
+            "category_edit" -> {
+                val categories by viewModel.categories.collectAsStateWithLifecycle()
+                CategoryEditScreen(
+                    categories = categories,
+                    onAddCategory = { viewModel.addCategory(it) },
+                    onDeleteCategory = { viewModel.deleteCategory(it) },
+                    onBack = { currentScreen = "settings" }
+                )
+            }
         }
 
         if (showCamera) {
@@ -138,6 +185,14 @@ fun MainAppHost(viewModel: MainViewModel) {
                         
                         // 결과 처리 (디테일 화면에는 전처리된 이미지를 보여줌)
                         viewModel.processOcrResult(textLines, processedFile.absolutePath)
+
+                        // 자동 저장 설정이 켜져 있으면 즉시 저장
+                        val currentAutoSave = viewModel.autoSave.value
+                        if (currentAutoSave) {
+                            viewModel.parsedReceipt.value?.let { 
+                                viewModel.saveReceipt(it)
+                            }
+                        }
                     }
                 },
                 onClose = { showCamera = false }

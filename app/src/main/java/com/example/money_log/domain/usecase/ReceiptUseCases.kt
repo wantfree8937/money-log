@@ -29,5 +29,6 @@ class DeleteReceiptUseCase(private val repository: ReceiptRepository) {
  * 월간 총 지출액을 가져오는 유스케이스
  */
 class GetMonthlyTotalUseCase(private val repository: ReceiptRepository) {
-    operator fun invoke(month: String): Flow<Int> = repository.getMonthlyTotal(month)
+    operator fun invoke(startDate: String, endDate: String): Flow<Int> = 
+        repository.getTotalInDateRange(startDate, endDate)
 }

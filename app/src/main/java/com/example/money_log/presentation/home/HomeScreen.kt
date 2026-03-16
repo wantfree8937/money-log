@@ -498,10 +498,17 @@ fun MoneyLogBottomNavigation(
             )
         )
         NavigationBarItem(
-            selected = false,
-            onClick = {},
+            selected = currentScreen == "settings",
+            onClick = { onScreenSelected("settings") },
             icon = { Icon(Icons.Default.Settings, contentDescription = "설정") },
-            label = { Text("설정") }
+            label = { Text("설정") },
+            colors = NavigationBarItemDefaults.colors(
+                selectedIconColor = MainGreen,
+                selectedTextColor = MainGreen,
+                unselectedIconColor = TextGray,
+                unselectedTextColor = TextGray,
+                indicatorColor = Color.Transparent
+            )
         )
     }
 }

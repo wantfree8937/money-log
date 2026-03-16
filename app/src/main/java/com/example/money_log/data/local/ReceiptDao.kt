@@ -20,6 +20,6 @@ interface ReceiptDao {
     @Query("SELECT * FROM receipts WHERE id = :id")
     suspend fun getReceiptById(id: Int): ReceiptEntity?
 
-    @Query("SELECT SUM(amount) FROM receipts WHERE date LIKE :month || '%'")
-    fun getMonthlyTotal(month: String): Flow<Int?>
+    @Query("SELECT SUM(amount) FROM receipts WHERE date >= :startDate AND date <= :endDate")
+    fun getTotalInDateRange(startDate: String, endDate: String): Flow<Int?>
 }

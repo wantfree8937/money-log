@@ -13,6 +13,7 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.stateIn
+import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.launch
 import java.text.SimpleDateFormat
 import java.util.*
@@ -47,13 +48,14 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
     val autoSave = settingsDataStore.autoSave.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), false)
     val darkMode = settingsDataStore.darkMode.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), "system")
     val language = settingsDataStore.language.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), "ko")
+    val categories = settingsDataStore.categories.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), listOf("식비", "교통", "쇼핑", "의료", "생활", "주거", "통신", "교육", "기타"))
 
     // 현재 수정 중인 영수증의 ID (새 영수증이면 0 또는 null)
     private var currentEditingId: Int? = null
 
     init {
         loadReceipts()
-        loadMonthlyTotal()
+        observeMonthlyTotal()
     }
 
     // 설정 업데이트 함수들
@@ -61,6 +63,22 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
     fun updateAutoSave(enabled: Boolean) = viewModelScope.launch { settingsDataStore.updateAutoSave(enabled) }
     fun updateDarkMode(mode: String) = viewModelScope.launch { settingsDataStore.updateDarkMode(mode) }
     fun updateLanguage(lang: String) = viewModelScope.launch { settingsDataStore.updateLanguage(lang) }
+
+    fun addCategory(category: String) {
+        val current = categories.value.toMutableList()
+        if (!current.contains(category)) {
+            current.add(category)
+            viewModelScope.launch { settingsDataStore.updateCategories(current) }
+        }
+    }
+
+    fun deleteCategory(category: String) {
+        val current = categories.value.toMutableList()
+        if (current.contains(category)) {
+            current.remove(category)
+            viewModelScope.launch { settingsDataStore.updateCategories(current) }
+        }
+    }
 
     private fun loadReceipts() {
         viewModelScope.launch {
@@ -70,13 +88,51 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
         }
     }
 
-    private fun loadMonthlyTotal() {
+    fun exportReceiptsToCsv(context: android.content.Context) {
+        com.example.money_log.core.utils.ExportUtils.exportReceiptsToCsv(context, _receipts.value)
+    }
+
+    @OptIn(kotlinx.coroutines.ExperimentalCoroutinesApi::class)
+    private fun observeMonthlyTotal() {
         viewModelScope.launch {
-            val currentMonth = SimpleDateFormat("yyyy-MM", Locale.getDefault()).format(Date())
-            getMonthlyTotalUseCase(currentMonth).collect {
+            startDay.flatMapLatest { day ->
+                val (startDate, endDate) = calculateDateRange(day)
+                getMonthlyTotalUseCase(startDate, endDate)
+            }.collect {
                 _monthlyTotal.value = it
             }
         }
+    }
+
+    /**
+     * 설정된 시작일에 따른 이번 달 날짜 범위 계산
+     * 예: 시작일이 25일이고 오늘이 3월 10일이면, 범위는 2월 25일 ~ 3월 24일
+     */
+    private fun calculateDateRange(startDay: Int): Pair<String, String> {
+        val calendar = Calendar.getInstance()
+        val today = calendar.get(Calendar.DAY_OF_MONTH)
+        val sdf = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault())
+
+        val startCal = Calendar.getInstance()
+        val endCal = Calendar.getInstance()
+
+        if (today < startDay) {
+            // 아직 시작일이 안 지났으면 지난달 시작일부터 이번달 종료일까지
+            startCal.add(Calendar.MONTH, -1)
+            startCal.set(Calendar.DAY_OF_MONTH, startDay)
+            
+            endCal.set(Calendar.DAY_OF_MONTH, startDay)
+            endCal.add(Calendar.DAY_OF_MONTH, -1)
+        } else {
+            // 시작일이 지났으면 이번달 시작일부터 다음달 종료일까지
+            startCal.set(Calendar.DAY_OF_MONTH, startDay)
+            
+            endCal.add(Calendar.MONTH, 1)
+            endCal.set(Calendar.DAY_OF_MONTH, startDay)
+            endCal.add(Calendar.DAY_OF_MONTH, -1)
+        }
+
+        return sdf.format(startCal.time) to sdf.format(endCal.time)
     }
 
     fun processOcrResult(textLines: List<String>, imagePath: String) {
