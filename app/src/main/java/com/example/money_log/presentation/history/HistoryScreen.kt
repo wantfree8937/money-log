@@ -71,7 +71,7 @@ fun HistoryScreen(
         ModalBottomSheet(
             onDismissRequest = { showAddOptions = false },
             sheetState = addOptionsSheetState,
-            containerColor = SurfaceWhite
+            containerColor = MaterialTheme.colorScheme.surface
         ) {
             Column(
                 modifier = Modifier
@@ -117,7 +117,7 @@ fun HistoryScreen(
         ModalBottomSheet(
             onDismissRequest = { showMonthPicker = false },
             sheetState = monthPickerSheetState,
-            containerColor = SurfaceWhite
+            containerColor = MaterialTheme.colorScheme.surface
         ) {
             Column(
                 modifier = Modifier
@@ -149,7 +149,7 @@ fun HistoryScreen(
                                         val monthPart = selectedMonth.split("-")[1]
                                         selectedMonth = "$year-$monthPart"
                                     },
-                                color = if (isSelected) BackgroundGray else Color.Transparent,
+                                color = if (isSelected) MaterialTheme.colorScheme.background else Color.Transparent,
                                 shape = RoundedCornerShape(8.dp)
                             ) {
                                 Text(
@@ -157,7 +157,7 @@ fun HistoryScreen(
                                     modifier = Modifier.padding(12.dp),
                                     textAlign = androidx.compose.ui.text.style.TextAlign.Center,
                                     fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Normal,
-                                    color = if (isSelected) MainGreen else Color.Black
+                                    color = if (isSelected) MainGreen else MaterialTheme.colorScheme.onSurface
                                 )
                             }
                         }
@@ -177,7 +177,7 @@ fun HistoryScreen(
                                         selectedMonth = "$yearPart-$monthStr"
                                         showMonthPicker = false
                                     },
-                                color = if (isSelected) BackgroundGray else Color.Transparent,
+                                color = if (isSelected) MaterialTheme.colorScheme.background else Color.Transparent,
                                 shape = RoundedCornerShape(8.dp)
                             ) {
                                 Text(
@@ -185,7 +185,7 @@ fun HistoryScreen(
                                     modifier = Modifier.padding(12.dp),
                                     textAlign = androidx.compose.ui.text.style.TextAlign.Center,
                                     fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Normal,
-                                    color = if (isSelected) MainGreen else Color.Black
+                                    color = if (isSelected) MainGreen else MaterialTheme.colorScheme.onSurface
                                 )
                             }
                         }
@@ -220,7 +220,7 @@ fun HistoryScreen(
                     Text("취소")
                 }
             },
-            containerColor = SurfaceWhite
+            containerColor = MaterialTheme.colorScheme.surface
         )
     }
 
@@ -263,7 +263,12 @@ fun HistoryScreen(
                         }
                     }
                 },
-                colors = TopAppBarDefaults.topAppBarColors(containerColor = SurfaceWhite)
+                colors = TopAppBarDefaults.topAppBarColors(
+                    containerColor = MaterialTheme.colorScheme.surface,
+                    titleContentColor = MaterialTheme.colorScheme.onSurface,
+                    navigationIconContentColor = MaterialTheme.colorScheme.onSurface,
+                    actionIconContentColor = MaterialTheme.colorScheme.onSurface
+                )
             )
         },
         bottomBar = {
@@ -274,7 +279,7 @@ fun HistoryScreen(
                 onScreenSelected = onScreenSelected
               )
         },
-        containerColor = BackgroundGray
+        containerColor = MaterialTheme.colorScheme.background
     ) { padding ->
         Column(
             modifier = Modifier
@@ -284,7 +289,7 @@ fun HistoryScreen(
             // 년월 선택기
             if (!isSelectionMode) {
                 Surface(
-                    color = SurfaceWhite,
+                    color = MaterialTheme.colorScheme.surface,
                     modifier = Modifier.fillMaxWidth()
                 ) {
                     Row(

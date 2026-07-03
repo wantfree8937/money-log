@@ -52,7 +52,7 @@ fun HomeScreen(
         ModalBottomSheet(
             onDismissRequest = { showAddOptions = false },
             sheetState = bottomSheetState,
-            containerColor = SurfaceWhite
+            containerColor = MaterialTheme.colorScheme.surface
         ) {
             Column(
                 modifier = Modifier
@@ -113,7 +113,7 @@ fun HomeScreen(
                 onScreenSelected = onScreenSelected
             )
         },
-        containerColor = BackgroundGray
+        containerColor = MaterialTheme.colorScheme.background
     ) { padding ->
         val scrollState = rememberScrollState()
         Column(
@@ -243,7 +243,7 @@ fun CategoryBreakdownCard(total: Int, stats: List<CategoryData>) {
     Card(
         modifier = Modifier.fillMaxWidth(),
         shape = RoundedCornerShape(24.dp),
-        colors = CardDefaults.cardColors(containerColor = SurfaceWhite)
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface)
     ) {
         Column(modifier = Modifier.padding(16.dp)) {
             Row(
@@ -251,7 +251,7 @@ fun CategoryBreakdownCard(total: Int, stats: List<CategoryData>) {
                 horizontalArrangement = Arrangement.SpaceBetween
             ) {
                 Text("카테고리별 지출", fontWeight = FontWeight.Bold)
-                Text("이번 달", color = TextGray, style = MaterialTheme.typography.bodySmall)
+                Text("이번 달", color = MaterialTheme.colorScheme.onSurfaceVariant, style = MaterialTheme.typography.bodySmall)
             }
             
             Spacer(modifier = Modifier.height(16.dp))
@@ -288,7 +288,7 @@ fun CategoryBreakdownCard(total: Int, stats: List<CategoryData>) {
                 
                 Column(horizontalAlignment = Alignment.CenterHorizontally) {
                     Text("₩ %,d".format(total), style = MaterialTheme.typography.headlineSmall.copy(fontWeight = FontWeight.Bold))
-                    Text("지출", style = MaterialTheme.typography.labelSmall, color = TextGray)
+                    Text("지출", style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
                 }
             }
             
@@ -324,7 +324,7 @@ fun LegendItem(label: String, percent: String, color: Color) {
         Row(verticalAlignment = Alignment.CenterVertically) {
             Box(modifier = Modifier.size(8.dp).clip(CircleShape).background(color))
             Spacer(modifier = Modifier.width(4.dp))
-            Text(label, style = MaterialTheme.typography.bodySmall, color = TextGray)
+            Text(label, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
         }
         Text(percent, fontWeight = FontWeight.Bold)
     }
@@ -377,7 +377,7 @@ fun TransactionItem(
     Card(
         modifier = Modifier.fillMaxWidth(),
         shape = RoundedCornerShape(20.dp),
-        colors = CardDefaults.cardColors(containerColor = SurfaceWhite),
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
         onClick = { if (isSelectionMode) onSelectedChange(!isSelected) else onClick() }
     ) {
         Row(
@@ -405,15 +405,16 @@ fun TransactionItem(
                 Text(
                     receipt.storeName, 
                     fontWeight = FontWeight.Bold,
+                    color = MaterialTheme.colorScheme.onSurface,
                     maxLines = 1,
                     overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis
                 )
                 Row(verticalAlignment = Alignment.CenterVertically) {
-                    Text(receipt.date, style = MaterialTheme.typography.bodySmall, color = TextGray)
+                    Text(receipt.date, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
                     Spacer(modifier = Modifier.width(6.dp))
-                    Text("•", style = MaterialTheme.typography.bodySmall, color = TextGray.copy(alpha = 0.3f))
+                    Text("•", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.3f))
                     Spacer(modifier = Modifier.width(6.dp))
-                    Text(receipt.category, style = MaterialTheme.typography.bodySmall, color = TextGray)
+                    Text(receipt.category, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
                 }
                 val timeFormat = SimpleDateFormat("yyyy.MM.dd HH:mm", Locale.getDefault())
                 val registerTime = timeFormat.format(Date(receipt.createdAt))
@@ -432,6 +433,7 @@ fun TransactionItem(
             Text(
                 "- ₩ %,d".format(receipt.amount), 
                 fontWeight = FontWeight.Bold,
+                color = MaterialTheme.colorScheme.onSurface,
                 style = MaterialTheme.typography.bodyLarge
             )
         }
@@ -445,7 +447,7 @@ fun MoneyLogBottomNavigation(
     onScreenSelected: (String) -> Unit = {}
 ) {
     NavigationBar(
-        containerColor = SurfaceWhite,
+        containerColor = MaterialTheme.colorScheme.surface,
         modifier = Modifier.height(80.dp),
         windowInsets = WindowInsets(0, 0, 0, 0)
     ) {
@@ -457,8 +459,8 @@ fun MoneyLogBottomNavigation(
             colors = NavigationBarItemDefaults.colors(
                 selectedIconColor = MainGreen,
                 selectedTextColor = MainGreen,
-                unselectedIconColor = TextGray,
-                unselectedTextColor = TextGray,
+                unselectedIconColor = MaterialTheme.colorScheme.onSurfaceVariant,
+                unselectedTextColor = MaterialTheme.colorScheme.onSurfaceVariant,
                 indicatorColor = Color.Transparent
             )
         )
@@ -470,8 +472,8 @@ fun MoneyLogBottomNavigation(
             colors = NavigationBarItemDefaults.colors(
                 selectedIconColor = MainGreen,
                 selectedTextColor = MainGreen,
-                unselectedIconColor = TextGray,
-                unselectedTextColor = TextGray,
+                unselectedIconColor = MaterialTheme.colorScheme.onSurfaceVariant,
+                unselectedTextColor = MaterialTheme.colorScheme.onSurfaceVariant,
                 indicatorColor = Color.Transparent
             )
         )
@@ -505,8 +507,8 @@ fun MoneyLogBottomNavigation(
             colors = NavigationBarItemDefaults.colors(
                 selectedIconColor = MainGreen,
                 selectedTextColor = MainGreen,
-                unselectedIconColor = TextGray,
-                unselectedTextColor = TextGray,
+                unselectedIconColor = MaterialTheme.colorScheme.onSurfaceVariant,
+                unselectedTextColor = MaterialTheme.colorScheme.onSurfaceVariant,
                 indicatorColor = Color.Transparent
             )
         )
@@ -518,8 +520,8 @@ fun MoneyLogBottomNavigation(
             colors = NavigationBarItemDefaults.colors(
                 selectedIconColor = MainGreen,
                 selectedTextColor = MainGreen,
-                unselectedIconColor = TextGray,
-                unselectedTextColor = TextGray,
+                unselectedIconColor = MaterialTheme.colorScheme.onSurfaceVariant,
+                unselectedTextColor = MaterialTheme.colorScheme.onSurfaceVariant,
                 indicatorColor = Color.Transparent
             )
         )

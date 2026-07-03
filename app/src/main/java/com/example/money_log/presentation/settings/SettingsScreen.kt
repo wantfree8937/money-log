@@ -39,10 +39,10 @@ fun SettingsScreen(
 
 
     if (showDarkModeDialog) {
-        val options = listOf("system" to "시스템 설정", "light" to "라이트 모드", "dark" to "다크 모드")
+        val options = listOf("light" to "라이트 모드", "dark" to "다크 모드")
         AlertDialog(
             onDismissRequest = { showDarkModeDialog = false },
-            title = { Text("다크모드 설정", fontWeight = FontWeight.Bold) },
+            title = { Text("테마 설정", fontWeight = FontWeight.Bold) },
             text = {
                 Column {
                     options.forEach { (mode, label) ->
@@ -139,10 +139,14 @@ fun SettingsScreen(
                         Icon(Icons.Default.ArrowBack, contentDescription = "뒤로가기")
                     }
                 },
-                colors = TopAppBarDefaults.topAppBarColors(containerColor = SurfaceWhite)
+                colors = TopAppBarDefaults.topAppBarColors(
+                    containerColor = MaterialTheme.colorScheme.surface,
+                    titleContentColor = MaterialTheme.colorScheme.onSurface,
+                    navigationIconContentColor = MaterialTheme.colorScheme.onSurface
+                )
             )
         },
-        containerColor = BackgroundGray
+        containerColor = MaterialTheme.colorScheme.background
     ) { padding ->
         Column(
             modifier = Modifier
@@ -178,11 +182,11 @@ fun SettingsScreen(
             SettingsSection(title = "디스플레이 및 기타") {
                 SettingsItem(
                     icon = Icons.Default.DarkMode,
-                    title = "다크모드",
+                    title = "테마 설정",
                     value = when(darkMode) {
                         "light" -> "라이트 모드"
                         "dark" -> "다크 모드"
-                        else -> "시스템 설정"
+                        else -> "라이트 모드"
                     },
                     onClick = { showDarkModeDialog = true }
                 )
@@ -205,14 +209,17 @@ fun SettingsSection(title: String, content: @Composable ColumnScope.() -> Unit) 
         Text(
             title,
             fontSize = 14.sp,
-            color = TextGray,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
             fontWeight = FontWeight.Bold,
             modifier = Modifier.padding(start = 4.dp, bottom = 8.dp)
         )
         Card(
             modifier = Modifier.fillMaxWidth(),
             shape = RoundedCornerShape(20.dp),
-            colors = CardDefaults.cardColors(containerColor = SurfaceWhite)
+            colors = CardDefaults.cardColors(
+                containerColor = MaterialTheme.colorScheme.surface,
+                contentColor = MaterialTheme.colorScheme.onSurface
+            )
         ) {
             Column(modifier = Modifier.padding(vertical = 8.dp)) {
                 content()
@@ -252,12 +259,13 @@ fun SettingsItem(
             title,
             modifier = Modifier.weight(1f),
             style = MaterialTheme.typography.bodyLarge,
+            color = MaterialTheme.colorScheme.onSurface,
             fontWeight = FontWeight.Medium
         )
         if (value != null) {
             Text(
                 value,
-                color = TextGray,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
                 style = MaterialTheme.typography.bodyMedium
             )
             Spacer(modifier = Modifier.width(8.dp))
@@ -302,12 +310,13 @@ fun SettingsSwitchItem(
             Text(
                 title,
                 style = MaterialTheme.typography.bodyLarge,
+                color = MaterialTheme.colorScheme.onSurface,
                 fontWeight = FontWeight.Medium
             )
             Text(
                 description,
                 style = MaterialTheme.typography.bodySmall,
-                color = TextGray
+                color = MaterialTheme.colorScheme.onSurfaceVariant
             )
         }
         Switch(

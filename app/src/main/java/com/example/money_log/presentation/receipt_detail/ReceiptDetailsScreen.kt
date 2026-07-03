@@ -124,7 +124,7 @@ fun ReceiptDetailsScreen(
                     Text("취소")
                 }
             },
-            containerColor = SurfaceWhite
+            containerColor = MaterialTheme.colorScheme.surface
         )
     }
 
@@ -156,7 +156,7 @@ fun ReceiptDetailsScreen(
         ModalBottomSheet(
             onDismissRequest = { showCategoryPicker = false },
             sheetState = bottomSheetState,
-            containerColor = SurfaceWhite
+            containerColor = MaterialTheme.colorScheme.surface
         ) {
             Column(
                 modifier = Modifier
@@ -214,14 +214,19 @@ fun ReceiptDetailsScreen(
                 actions = {
                     if (receipt.id != 0) {
                         IconButton(onClick = { showDeleteDialog = true }) {
-                            Icon(Icons.Default.Delete, contentDescription = "삭제하기", tint = TextGray)
+                            Icon(Icons.Default.Delete, contentDescription = "삭제하기", tint = MaterialTheme.colorScheme.onSurfaceVariant)
                         }
                     }
                 },
-                colors = TopAppBarDefaults.topAppBarColors(containerColor = SurfaceWhite)
+                colors = TopAppBarDefaults.topAppBarColors(
+                    containerColor = MaterialTheme.colorScheme.surface,
+                    titleContentColor = MaterialTheme.colorScheme.onSurface,
+                    navigationIconContentColor = MaterialTheme.colorScheme.onSurface,
+                    actionIconContentColor = MaterialTheme.colorScheme.onSurface
+                )
             )
         },
-        containerColor = BackgroundGray
+        containerColor = MaterialTheme.colorScheme.background
     ) { padding ->
         Column(
             modifier = Modifier
@@ -303,7 +308,7 @@ fun ReceiptDetailsScreen(
                         )
                         Spacer(modifier = Modifier.height(8.dp))
                         Text("영수증 이미지 추가 (선택사항)", color = MainGreen, fontWeight = FontWeight.Bold, fontSize = 14.sp)
-                        Text("터치하여 갤러리에서 사진 첨부", color = TextGray, fontSize = 11.sp, modifier = Modifier.padding(top = 2.dp))
+                        Text("터치하여 갤러리에서 사진 첨부", color = MaterialTheme.colorScheme.onSurfaceVariant, fontSize = 11.sp, modifier = Modifier.padding(top = 2.dp))
                     }
                 }
                 Spacer(modifier = Modifier.height(24.dp))
@@ -430,12 +435,15 @@ fun ReceiptInputField(
                 readOnly = onFieldClick != null,
                 shape = RoundedCornerShape(12.dp),
                 colors = OutlinedTextFieldDefaults.colors(
-                    unfocusedContainerColor = SurfaceWhite,
-                    focusedContainerColor = SurfaceWhite,
+                    unfocusedTextColor = MaterialTheme.colorScheme.onSurface,
+                    focusedTextColor = MaterialTheme.colorScheme.onSurface,
+                    disabledTextColor = MaterialTheme.colorScheme.onSurface,
+                    unfocusedContainerColor = MaterialTheme.colorScheme.surface,
+                    focusedContainerColor = MaterialTheme.colorScheme.surface,
+                    disabledContainerColor = MaterialTheme.colorScheme.surface,
                     unfocusedBorderColor = Color.Transparent,
                     focusedBorderColor = MainGreen,
                     disabledBorderColor = Color.Transparent,
-                    disabledTextColor = MaterialTheme.colorScheme.onSurface,
                     disabledLabelColor = MaterialTheme.colorScheme.onSurface,
                     disabledPrefixColor = MaterialTheme.colorScheme.onSurface,
                     disabledSuffixColor = MaterialTheme.colorScheme.onSurface
@@ -470,12 +478,15 @@ fun ReceiptInputField(
                 readOnly = onFieldClick != null,
                 shape = RoundedCornerShape(12.dp),
                 colors = OutlinedTextFieldDefaults.colors(
-                    unfocusedContainerColor = SurfaceWhite,
-                    focusedContainerColor = SurfaceWhite,
+                    unfocusedTextColor = MaterialTheme.colorScheme.onSurface,
+                    focusedTextColor = MaterialTheme.colorScheme.onSurface,
+                    disabledTextColor = MaterialTheme.colorScheme.onSurface,
+                    unfocusedContainerColor = MaterialTheme.colorScheme.surface,
+                    focusedContainerColor = MaterialTheme.colorScheme.surface,
+                    disabledContainerColor = MaterialTheme.colorScheme.surface,
                     unfocusedBorderColor = Color.Transparent,
                     focusedBorderColor = MainGreen,
                     disabledBorderColor = Color.Transparent,
-                    disabledTextColor = MaterialTheme.colorScheme.onSurface,
                     disabledLabelColor = MaterialTheme.colorScheme.onSurface,
                     disabledPrefixColor = MaterialTheme.colorScheme.onSurface,
                     disabledSuffixColor = MaterialTheme.colorScheme.onSurface

@@ -45,10 +45,15 @@ fun CategoryEditScreen(
                         Icon(Icons.Default.Add, contentDescription = "추가", tint = MainGreen)
                     }
                 },
-                colors = TopAppBarDefaults.topAppBarColors(containerColor = SurfaceWhite)
+                colors = TopAppBarDefaults.topAppBarColors(
+                    containerColor = MaterialTheme.colorScheme.surface,
+                    titleContentColor = MaterialTheme.colorScheme.onSurface,
+                    navigationIconContentColor = MaterialTheme.colorScheme.onSurface,
+                    actionIconContentColor = MaterialTheme.colorScheme.onSurface
+                )
             )
         },
-        containerColor = BackgroundGray
+        containerColor = MaterialTheme.colorScheme.background
     ) { padding ->
         if (showAddDialog) {
             AlertDialog(
@@ -96,7 +101,7 @@ fun CategoryEditScreen(
                 Card(
                     modifier = Modifier.fillMaxWidth(),
                     shape = RoundedCornerShape(16.dp),
-                    colors = CardDefaults.cardColors(containerColor = SurfaceWhite)
+                    colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface)
                 ) {
                     Row(
                         modifier = Modifier
@@ -119,11 +124,15 @@ fun CategoryEditScreen(
                                 )
                             }
                             Spacer(modifier = Modifier.width(12.dp))
-                            Text(category, fontWeight = FontWeight.Medium)
+                            Text(
+                                category,
+                                fontWeight = FontWeight.Medium,
+                                color = MaterialTheme.colorScheme.onSurface
+                            )
                         }
                         
                         IconButton(onClick = { onDeleteCategory(category) }) {
-                            Icon(Icons.Default.Delete, contentDescription = "삭제", tint = Color.LightGray)
+                            Icon(Icons.Default.Delete, contentDescription = "삭제", tint = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.6f))
                         }
                     }
                 }

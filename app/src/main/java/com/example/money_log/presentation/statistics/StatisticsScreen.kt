@@ -65,7 +65,7 @@ fun StatisticsScreen(
         ModalBottomSheet(
             onDismissRequest = { showAddOptions = false },
             sheetState = addOptionsSheetState,
-            containerColor = SurfaceWhite
+            containerColor = MaterialTheme.colorScheme.surface
         ) {
             Column(
                 modifier = Modifier
@@ -111,7 +111,7 @@ fun StatisticsScreen(
         ModalBottomSheet(
             onDismissRequest = { showMonthPicker = false },
             sheetState = monthPickerSheetState,
-            containerColor = SurfaceWhite
+            containerColor = MaterialTheme.colorScheme.surface
         ) {
             Column(
                 modifier = Modifier
@@ -143,7 +143,7 @@ fun StatisticsScreen(
                                         val monthPart = selectedMonth.split("-")[1]
                                         selectedMonth = "$year-$monthPart"
                                     },
-                                color = if (isSelected) BackgroundGray else Color.Transparent,
+                                color = if (isSelected) MaterialTheme.colorScheme.background else Color.Transparent,
                                 shape = RoundedCornerShape(8.dp)
                             ) {
                                 Text(
@@ -151,7 +151,7 @@ fun StatisticsScreen(
                                     modifier = Modifier.padding(12.dp),
                                     textAlign = TextAlign.Center,
                                     fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Normal,
-                                    color = if (isSelected) MainGreen else Color.Black
+                                    color = if (isSelected) MainGreen else MaterialTheme.colorScheme.onSurface
                                 )
                             }
                         }
@@ -171,7 +171,7 @@ fun StatisticsScreen(
                                         selectedMonth = "$yearPart-$monthStr"
                                         showMonthPicker = false
                                     },
-                                color = if (isSelected) BackgroundGray else Color.Transparent,
+                                color = if (isSelected) MaterialTheme.colorScheme.background else Color.Transparent,
                                 shape = RoundedCornerShape(8.dp)
                             ) {
                                 Text(
@@ -179,7 +179,7 @@ fun StatisticsScreen(
                                     modifier = Modifier.padding(12.dp),
                                     textAlign = TextAlign.Center,
                                     fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Normal,
-                                    color = if (isSelected) MainGreen else Color.Black
+                                    color = if (isSelected) MainGreen else MaterialTheme.colorScheme.onSurface
                                 )
                             }
                         }
@@ -197,7 +197,7 @@ fun StatisticsScreen(
                 onScreenSelected = onScreenSelected
             )
         },
-        containerColor = BackgroundGray
+        containerColor = MaterialTheme.colorScheme.background
     ) { padding ->
         val scrollState = rememberScrollState()
         Column(
@@ -222,7 +222,7 @@ fun StatisticsScreen(
                 )
                 Surface(
                     shape = RoundedCornerShape(12.dp),
-                    color = SurfaceWhite,
+                    color = MaterialTheme.colorScheme.surface,
                     modifier = Modifier.clickable { showMonthPicker = true }
                 ) {
                     Row(
@@ -357,7 +357,7 @@ fun MonthlyTrendCard(receipts: List<Receipt>, selectedMonth: String) {
     Card(
         modifier = Modifier.fillMaxWidth(),
         shape = RoundedCornerShape(24.dp),
-        colors = CardDefaults.cardColors(containerColor = SurfaceWhite)
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface)
     ) {
         Column(modifier = Modifier.padding(20.dp)) {
             Text(
@@ -442,7 +442,7 @@ fun MonthlyTrendCard(receipts: List<Receipt>, selectedMonth: String) {
                         Text(
                             months[index], 
                             fontSize = 10.sp, 
-                            color = if (isPressed || isCurrentMonth) MainGreen else TextGray,
+                            color = if (isPressed || isCurrentMonth) MainGreen else MaterialTheme.colorScheme.onSurfaceVariant,
                             fontWeight = if (isPressed || isCurrentMonth) FontWeight.Bold else FontWeight.Normal,
                             textAlign = TextAlign.Center
                         )
@@ -468,7 +468,7 @@ fun CategoryAnalysisCard(receipts: List<Receipt>) {
     Card(
         modifier = Modifier.fillMaxWidth(),
         shape = RoundedCornerShape(24.dp),
-        colors = CardDefaults.cardColors(containerColor = SurfaceWhite)
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface)
     ) {
         Column(modifier = Modifier.padding(20.dp)) {
             Text(
@@ -532,12 +532,12 @@ fun CategoryProgressItem(category: String, amount: Int, percentage: Float) {
                     Text(
                         category, 
                         style = MaterialTheme.typography.bodyMedium.copy(fontWeight = FontWeight.Bold),
-                        color = Color.Black
+                        color = MaterialTheme.colorScheme.onSurface
                     )
                     Text(
                         "${(percentage * 100).toInt()}%",
                         fontSize = 11.sp,
-                        color = TextGray
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
                 }
             }

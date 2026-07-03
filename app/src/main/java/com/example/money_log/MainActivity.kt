@@ -263,10 +263,10 @@ fun ExitConfirmDialog(onConfirm: () -> Unit, onDismiss: () -> Unit) {
         },
         dismissButton = {
             TextButton(onClick = onDismiss) {
-                Text("취소", color = com.example.money_log.ui.theme.TextGray)
+                Text("취소", color = MaterialTheme.colorScheme.onSurfaceVariant)
             }
         },
         shape = androidx.compose.foundation.shape.RoundedCornerShape(20.dp),
-        containerColor = com.example.money_log.ui.theme.SurfaceWhite
+        containerColor = MaterialTheme.colorScheme.surface
     )
 }
