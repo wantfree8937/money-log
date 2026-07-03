@@ -6,6 +6,7 @@ import android.net.Uri
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.BackHandler
+import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.compose.setContent
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.activity.viewModels
@@ -93,6 +94,41 @@ fun MainAppHost(viewModel: MainViewModel) {
     var showCamera by remember { mutableStateOf(false) }
     var showExitDialog by remember { mutableStateOf(false) }
 
+    // Uri 이미지를 캐시에 복사해 File객체로 뽑아내는 헬퍼
+    fun copyUriToCacheFile(context: android.content.Context, uri: Uri): java.io.File? {
+        return try {
+            val inputStream = context.contentResolver.openInputStream(uri) ?: return null
+            val tempFile = java.io.File(context.cacheDir, "gallery_${System.currentTimeMillis()}.jpg")
+            java.io.FileOutputStream(tempFile).use { outputStream ->
+                inputStream.copyTo(outputStream)
+            }
+            tempFile
+        } catch (e: Exception) {
+            e.printStackTrace()
+            null
+        }
+    }
+
+    // 홈 화면 바텀시트에서 다이렉트 갤러리 추가 시 사용하는 런처
+    val galleryAddLauncher = rememberLauncherForActivityResult(
+        contract = androidx.activity.result.contract.ActivityResultContracts.GetContent()
+    ) { uri: Uri? ->
+        uri?.let {
+            scope.launch {
+                val copiedFile = copyUriToCacheFile(context, it)
+                if (copiedFile != null) {
+                    // 이미지 전처리 (크롭 및 대비 개선)
+                    val processedFile = ImageProcessor.processImage(context, copiedFile)
+                    // 전처리된 이미지로 OCR 실행
+                    val textLines = OcrManager.recognizeText(context, Uri.fromFile(processedFile))
+                    // 결과 처리 및 제품 상세화면 전환
+                    viewModel.processOcrResult(textLines, processedFile.absolutePath)
+                }
+            }
+        }
+    }
+
+
     // 시스템 뒤로가기 버튼 처리
     BackHandler {
         when {
@@ -120,6 +156,7 @@ fun MainAppHost(viewModel: MainViewModel) {
                     monthlyTotal = monthlyTotal,
                     onAddClick = { showCamera = true },
                     onManualEntryClick = { viewModel.startManualEntry() },
+                    onGalleryAddClick = { galleryAddLauncher.launch("image/*") },
                     onReceiptClick = { viewModel.setSelectedReceipt(it) },
                     onViewAllClick = { currentScreen = "history" },
                     currentScreen = currentScreen,
@@ -172,8 +209,8 @@ fun MainAppHost(viewModel: MainViewModel) {
                 onImageCaptured = { file ->
                     showCamera = false
                     scope.launch {
-                        // 이미지 전처리 (크롭, 그레이스케일, 대비 개선)
-                        val processedFile = ImageProcessor.processImage(context, file)
+                        // 이미지 전처리 (카메라 유입이므로 가이드 크롭 활성화 shouldCrop = true)
+                        val processedFile = ImageProcessor.processImage(context, file, shouldCrop = true)
                         
                         // 전처리된 이미지로 OCR 실행
                         val textLines = OcrManager.recognizeText(context, Uri.fromFile(processedFile))

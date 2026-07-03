@@ -38,6 +38,7 @@ fun HomeScreen(
     monthlyTotal: Int,
     onAddClick: () -> Unit,
     onManualEntryClick: () -> Unit,
+    onGalleryAddClick: () -> Unit,
     onReceiptClick: (Receipt) -> Unit,
     onViewAllClick: () -> Unit,
     currentScreen: String = "home",
@@ -74,6 +75,18 @@ fun HomeScreen(
                     modifier = Modifier.clickable {
                         showAddOptions = false
                         onAddClick()
+                    }
+                )
+                
+                ListItem(
+                    headlineContent = { Text("갤러리에서 가져오기") },
+                    supportingContent = { Text("갤러리의 영수증 사진을 분석하여 입력합니다") },
+                    leadingContent = { 
+                        Icon(Icons.Default.Image, contentDescription = null, tint = MainGreen) 
+                    },
+                    modifier = Modifier.clickable {
+                        showAddOptions = false
+                        onGalleryAddClick()
                     }
                 )
                 

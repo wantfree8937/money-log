@@ -13,15 +13,15 @@ import java.io.IOException
  */
 object ImageProcessor {
 
-    fun processImage(context: Context, inputFile: File): File {
+    fun processImage(context: Context, inputFile: File, shouldCrop: Boolean = false): File {
         return try {
             val originalBitmap = BitmapFactory.decodeFile(inputFile.absolutePath) ?: return inputFile
             
             // 0. EXIF 정보를 바탕으로 회전 처리
             val rotatedBitmap = rotateIfRequired(originalBitmap, inputFile)
             
-            // 1. 가이드 영역에 맞게 크롭 (중앙 85% 가로, 0.7 종횡비)
-            val croppedBitmap = cropToGuide(rotatedBitmap)
+            // 1. 가이드 영역에 맞게 선택적 크롭
+            val croppedBitmap = if (shouldCrop) cropToGuide(rotatedBitmap) else rotatedBitmap
             
             // 2. 그레이스케일 및 대비 증가
             val processedBitmap = applyFilters(croppedBitmap)
@@ -33,8 +33,13 @@ object ImageProcessor {
             }
             
             if (originalBitmap != rotatedBitmap) originalBitmap.recycle()
-            rotatedBitmap.recycle()
-            croppedBitmap.recycle()
+            if (shouldCrop) {
+                rotatedBitmap.recycle()
+                croppedBitmap.recycle()
+            } else {
+                // 크롭되지 않았으면 rotatedBitmap과 croppedBitmap이 같으므로 한 번만 해제
+                rotatedBitmap.recycle()
+            }
             processedBitmap.recycle()
             
             outputFile

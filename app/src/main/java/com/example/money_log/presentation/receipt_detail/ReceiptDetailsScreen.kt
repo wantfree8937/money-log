@@ -25,6 +25,10 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.text.TextRange
 import androidx.compose.ui.text.input.TextFieldValue
+import androidx.compose.material.icons.filled.AddPhotoAlternate
+import androidx.compose.material.icons.filled.PhotoLibrary
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import com.example.money_log.domain.model.Receipt
 import com.example.money_log.ui.theme.*
 import android.graphics.BitmapFactory
@@ -41,11 +45,14 @@ fun ReceiptDetailsScreen(
     onRetake: () -> Unit,
     onBack: () -> Unit
 ) {
+    val context = androidx.compose.ui.platform.LocalContext.current
+    
     // 금액 포맷터 (천 단위 콤마)
     val amountFormatter = remember { DecimalFormat("#,###") }
     
     var editedMerchant by remember { mutableStateOf(receipt.storeName) }
     var editedDate by remember { mutableStateOf(receipt.date) }
+    var editedImagePath by remember { mutableStateOf(receipt.imagePath) }
     
     // 초기 금액을 TextFieldValue로 관리 (커서 위치 제어)
     var editedAmount by remember { 
@@ -53,6 +60,35 @@ fun ReceiptDetailsScreen(
         mutableStateOf(TextFieldValue(text = initialText, selection = TextRange(initialText.length)))
     }
     var editedCategory by remember { mutableStateOf(receipt.category) }
+
+    // Uri 이미지를 캐시에 복사해 File객체로 뽑아내는 헬퍼
+    fun copyUriToCacheFile(context: android.content.Context, uri: android.net.Uri): java.io.File? {
+        return try {
+            val inputStream = context.contentResolver.openInputStream(uri) ?: return null
+            val tempFile = java.io.File(context.cacheDir, "detail_gallery_${System.currentTimeMillis()}.jpg")
+            java.io.FileOutputStream(tempFile).use { outputStream ->
+                inputStream.copyTo(outputStream)
+            }
+            tempFile
+        } catch (e: Exception) {
+            e.printStackTrace()
+            null
+        }
+    }
+
+    // 상세 직접입력 내에서 이미지를 가져오는 런처
+    val detailGalleryLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.GetContent()
+    ) { uri: android.net.Uri? ->
+        uri?.let {
+            val copiedFile = copyUriToCacheFile(context, it)
+            if (copiedFile != null) {
+                // 이미지 전처리 (크롭 0.6 종횡비)
+                val processedFile = com.example.money_log.core.utils.ImageProcessor.processImage(context, copiedFile)
+                editedImagePath = processedFile.absolutePath
+            }
+        }
+    }
 
     // 삭제 확인 팝업 상태
     var showDeleteDialog by remember { mutableStateOf(false) }
@@ -196,31 +232,78 @@ fun ReceiptDetailsScreen(
         ) {
             Spacer(modifier = Modifier.height(16.dp))
 
-            // 영수증 이미지 미리보기 (이미지가 있는 경우에만 표시)
-            if (receipt.imagePath.isNotEmpty()) {
-                val bitmap = remember(receipt.imagePath) {
-                    BitmapFactory.decodeFile(receipt.imagePath)
+            // 영수증 이미지 미리보기 및 사진첩 첨부 박스
+            if (editedImagePath.isNotEmpty()) {
+                val bitmap = remember(editedImagePath) {
+                    BitmapFactory.decodeFile(editedImagePath)
                 }
                 if (bitmap != null) {
-                    Image(
-                        bitmap = bitmap.asImageBitmap(),
-                        contentDescription = "영수증 이미지",
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .height(480.dp)
-                            .clip(RoundedCornerShape(16.dp)),
-                        contentScale = ContentScale.Crop
-                    )
+                    Box(modifier = Modifier.fillMaxWidth().height(480.dp).clip(RoundedCornerShape(16.dp))) {
+                        Image(
+                            bitmap = bitmap.asImageBitmap(),
+                            contentDescription = "영수증 이미지",
+                            modifier = Modifier.fillMaxSize(),
+                            contentScale = ContentScale.Crop
+                        )
+                        // 사진 교체 투명 오버레이 버튼
+                        Surface(
+                            onClick = { detailGalleryLauncher.launch("image/*") },
+                            modifier = Modifier.align(Alignment.BottomEnd).padding(16.dp),
+                            shape = RoundedCornerShape(12.dp),
+                            color = Color.Black.copy(alpha = 0.6f)
+                        ) {
+                            Row(
+                                modifier = Modifier.padding(horizontal = 12.dp, vertical = 8.dp),
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                Icon(Icons.Default.PhotoLibrary, contentDescription = null, tint = Color.White, modifier = Modifier.size(16.dp))
+                                Spacer(modifier = Modifier.width(4.dp))
+                                Text("사진 교체", color = Color.White, fontSize = 12.sp, fontWeight = FontWeight.Bold)
+                            }
+                        }
+                    }
                 } else {
                     Box(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .height(480.dp)
+                            .height(200.dp)
                             .clip(RoundedCornerShape(16.dp))
-                            .background(Color.LightGray),
+                            .background(Color.LightGray)
+                            .clickable { detailGalleryLauncher.launch("image/*") },
                         contentAlignment = Alignment.Center
                     ) {
-                        Text("이미지를 불러올 수 없습니다")
+                        Text("이미지를 불러올 수 없습니다. 터치하여 다시 선택해주세요")
+                    }
+                }
+                Spacer(modifier = Modifier.height(24.dp))
+            } else {
+                // 이미지가 없는 직접 입력 시 점선 가이드 박스 표시
+                Surface(
+                    onClick = { detailGalleryLauncher.launch("image/*") },
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(130.dp),
+                    shape = RoundedCornerShape(16.dp),
+                    color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.2f),
+                    border = androidx.compose.foundation.BorderStroke(
+                        width = 2.dp,
+                        color = MainGreen.copy(alpha = 0.6f)
+                    )
+                ) {
+                    Column(
+                        modifier = Modifier.fillMaxSize().padding(16.dp),
+                        horizontalAlignment = Alignment.CenterHorizontally,
+                        verticalArrangement = Arrangement.Center
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.AddPhotoAlternate,
+                            contentDescription = "영수증 이미지 추가",
+                            tint = MainGreen,
+                            modifier = Modifier.size(36.dp)
+                        )
+                        Spacer(modifier = Modifier.height(8.dp))
+                        Text("영수증 이미지 추가 (선택사항)", color = MainGreen, fontWeight = FontWeight.Bold, fontSize = 14.sp)
+                        Text("터치하여 갤러리에서 사진 첨부", color = TextGray, fontSize = 11.sp, modifier = Modifier.padding(top = 2.dp))
                     }
                 }
                 Spacer(modifier = Modifier.height(24.dp))
@@ -285,6 +368,7 @@ fun ReceiptDetailsScreen(
                         date = editedDate,
                         amount = editedAmount.text.replace(",", "").toIntOrNull() ?: 0,
                         category = editedCategory,
+                        imagePath = editedImagePath, // 첨부되거나 변경된 이미지 경로 저장
                         createdAt = System.currentTimeMillis() // 저장/수정 시 항상 최신 시각으로 갱신하여 최상단 정렬
                     ))
                 },
@@ -297,7 +381,7 @@ fun ReceiptDetailsScreen(
             
             Spacer(modifier = Modifier.height(12.dp))
             
-            if (receipt.imagePath.isNotEmpty()) {
+            if (editedImagePath.isNotEmpty()) {
                 Button(
                     onClick = onRetake,
                     modifier = Modifier.fillMaxWidth().height(56.dp),
