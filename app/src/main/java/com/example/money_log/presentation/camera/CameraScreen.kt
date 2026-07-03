@@ -164,9 +164,8 @@ fun CameraUIOverlay(
         // 가이드 프레임
         Box(
             modifier = Modifier
-                .fillMaxWidth(0.85f)
-                .aspectRatio(0.6f)
-                .heightIn(max = 450.dp)
+                .fillMaxWidth(0.90f)
+                .aspectRatio(0.55f)
                 .align(Alignment.CenterHorizontally)
                 .border(
                     2.dp, 
@@ -190,14 +189,13 @@ fun CameraUIOverlay(
 
         Spacer(modifier = Modifier.weight(1f))
 
-        // 하단 컨트롤
-        Row(
-            modifier = Modifier.fillMaxWidth().padding(bottom = 48.dp, start = 32.dp, end = 32.dp),
-            horizontalArrangement = Arrangement.SpaceBetween,
-            verticalAlignment = Alignment.CenterVertically
+        // 하단 컨트롤 (셔터 버튼 단독 배치)
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(bottom = 48.dp),
+            contentAlignment = Alignment.Center
         ) {
-            CameraControlButton(Icons.Default.Image, "갤러리", onGalleryClick)
-            
             // 셔터 버튼
             Surface(
                 modifier = Modifier.size(80.dp),
@@ -209,8 +207,6 @@ fun CameraUIOverlay(
                     modifier = Modifier.padding(8.dp).clip(CircleShape).background(Color.White)
                 )
             }
-
-            CameraControlButton(Icons.Default.Cameraswitch, "카메라 전환", onSwitchCameraClick)
         }
     }
 }
