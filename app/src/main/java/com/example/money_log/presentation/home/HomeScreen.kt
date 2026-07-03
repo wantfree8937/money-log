@@ -47,6 +47,11 @@ fun HomeScreen(
     var showAddOptions by remember { mutableStateOf(false) }
     val bottomSheetState = rememberModalBottomSheetState()
     
+    val currentMonth = remember { SimpleDateFormat("yyyy-MM", Locale.getDefault()).format(Date()) }
+    val currentMonthReceipts = remember(receipts, currentMonth) {
+        receipts.filter { it.date.startsWith(currentMonth) }
+    }
+    
     // 추가 옵션 선택 바텀 시트
     if (showAddOptions) {
         ModalBottomSheet(
@@ -133,9 +138,9 @@ fun HomeScreen(
             Spacer(modifier = Modifier.height(24.dp))
             
             // 실시간 데이터를 사용한 카테고리별 통계
-            val categoryStats = remember(receipts) {
-                if (receipts.isEmpty() || monthlyTotal == 0) emptyList()
-                else receipts.groupBy { it.category }.map { (cat, list) ->
+            val categoryStats = remember(currentMonthReceipts) {
+                if (currentMonthReceipts.isEmpty() || monthlyTotal == 0) emptyList()
+                else currentMonthReceipts.groupBy { it.category }.map { (cat, list) ->
                     val catTotal = list.sumOf { it.amount }
                     val percent = (catTotal.toFloat() / monthlyTotal.toFloat()) * 100f
                     val color = when (cat) {
@@ -165,7 +170,7 @@ fun HomeScreen(
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 Text(
-                    "내역", 
+                    "이번 달 내역", 
                     style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold)
                 )
                 TextButton(onClick = onViewAllClick) {
@@ -174,7 +179,7 @@ fun HomeScreen(
             }
             
             // 내역 리스트
-            TransactionList(receipts, onReceiptClick)
+            TransactionList(currentMonthReceipts, onReceiptClick)
             
             // 하단 네비게이션 바와의 여백
             Spacer(modifier = Modifier.height(32.dp))
@@ -332,9 +337,32 @@ fun LegendItem(label: String, percent: String, color: Color) {
 
 @Composable
 fun TransactionList(receipts: List<Receipt>, onReceiptClick: (Receipt) -> Unit) {
-    Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
-        receipts.take(3).forEach { receipt ->
-            TransactionItem(receipt, onClick = { onReceiptClick(receipt) })
+    if (receipts.isEmpty()) {
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(vertical = 40.dp),
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.Center
+        ) {
+            Icon(
+                imageVector = Icons.Default.ReceiptLong,
+                contentDescription = null,
+                tint = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.4f),
+                modifier = Modifier.size(64.dp)
+            )
+            Spacer(modifier = Modifier.height(12.dp))
+            Text(
+                "이번 달 내역이 없습니다.",
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                style = MaterialTheme.typography.bodyMedium
+            )
+        }
+    } else {
+        Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+            receipts.take(3).forEach { receipt ->
+                TransactionItem(receipt, onClick = { onReceiptClick(receipt) })
+            }
         }
     }
 }
