@@ -43,8 +43,6 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
     private val _parsedReceipt = MutableStateFlow<Receipt?>(null)
     val parsedReceipt: StateFlow<Receipt?> = _parsedReceipt.asStateFlow()
 
-    // 설정 상태 노출
-    val autoSave = settingsDataStore.autoSave.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), false)
     val darkMode = settingsDataStore.darkMode.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), "system")
     val language = settingsDataStore.language.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), "ko")
     val categories = settingsDataStore.categories.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), listOf("식비", "교통", "쇼핑", "의료", "생활", "주거", "통신", "교육", "기타"))
@@ -59,7 +57,6 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
 
     // 설정 업데이트 함수들
 
-    fun updateAutoSave(enabled: Boolean) = viewModelScope.launch { settingsDataStore.updateAutoSave(enabled) }
     fun updateDarkMode(mode: String) = viewModelScope.launch { settingsDataStore.updateDarkMode(mode) }
     fun updateLanguage(lang: String) = viewModelScope.launch { settingsDataStore.updateLanguage(lang) }
 
@@ -119,8 +116,17 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
 
     fun processOcrResult(textLines: List<String>, imagePath: String) {
         val parsed = ReceiptParser.parse(textLines, imagePath)
-        // 사용자의 요청에 따라 촬영(또는 재촬영) 시 가맹점명과 날짜를 빈칸으로 초기화
-        val clearedParsed = parsed.copy(storeName = "", date = "")
+        
+        // 날짜와 최종 금액은 살리되 가맹점 이름만 빈 문자열("")로 초기화하여 수동 입력 유도
+        val baseParsed = parsed.copy(storeName = "")
+
+        // 카테고리가 현재 설정상의 카테고리 목록에 없으면 '기타' 또는 첫 번째 카테고리로 보정
+        val finalCategory = if (categories.value.contains(baseParsed.category)) {
+            baseParsed.category
+        } else {
+            if (categories.value.contains("기타")) "기타" else (categories.value.firstOrNull() ?: "기타")
+        }
+        val clearedParsed = baseParsed.copy(category = finalCategory)
         
         // 만약 기존 영수증을 수정(재촬영) 중이었다면 해당 ID를 유지
         _parsedReceipt.value = currentEditingId?.let { id ->

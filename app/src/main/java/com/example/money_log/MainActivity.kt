@@ -84,7 +84,6 @@ fun MainAppHost(viewModel: MainViewModel) {
     
     // 설정값 구독
 
-    val autoSave by viewModel.autoSave.collectAsStateWithLifecycle()
     val darkMode by viewModel.darkMode.collectAsStateWithLifecycle()
     val language by viewModel.language.collectAsStateWithLifecycle()
     val scope = rememberCoroutineScope()
@@ -148,10 +147,8 @@ fun MainAppHost(viewModel: MainViewModel) {
             }
             "settings" -> {
                 SettingsScreen(
-                    autoSave = autoSave,
                     darkMode = darkMode,
                     language = language,
-                    onAutoSaveChange = { viewModel.updateAutoSave(it) },
                     onDarkModeChange = { viewModel.updateDarkMode(it) },
                     onLanguageChange = { viewModel.updateLanguage(it) },
                     onCategoryEditClick = { currentScreen = "category_edit" },
@@ -184,13 +181,7 @@ fun MainAppHost(viewModel: MainViewModel) {
                         // 결과 처리 (디테일 화면에는 전처리된 이미지를 보여줌)
                         viewModel.processOcrResult(textLines, processedFile.absolutePath)
 
-                        // 자동 저장 설정이 켜져 있으면 즉시 저장
-                        val currentAutoSave = viewModel.autoSave.value
-                        if (currentAutoSave) {
-                            viewModel.parsedReceipt.value?.let { 
-                                viewModel.saveReceipt(it)
-                            }
-                        }
+
                     }
                 },
                 onClose = { showCamera = false }

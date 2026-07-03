@@ -24,10 +24,8 @@ import com.example.money_log.ui.theme.*
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun SettingsScreen(
-    autoSave: Boolean,
     darkMode: String,
     language: String,
-    onAutoSaveChange: (Boolean) -> Unit,
     onDarkModeChange: (String) -> Unit,
     onLanguageChange: (String) -> Unit,
     onCategoryEditClick: () -> Unit,
@@ -146,19 +144,6 @@ fun SettingsScreen(
                     icon = Icons.Default.FileDownload,
                     title = "엑셀(CSV) 내보내기",
                     onClick = onExportClick
-                )
-            }
-
-            Spacer(modifier = Modifier.height(24.dp))
-
-            // 인식 설정 섹션
-            SettingsSection(title = "인식 설정") {
-                SettingsSwitchItem(
-                    icon = Icons.Default.AutoFixHigh,
-                    title = "인식 결과 자동 저장",
-                    description = "OCR 인식 후 바로 저장합니다.",
-                    checked = autoSave,
-                    onCheckedChange = onAutoSaveChange
                 )
             }
 
