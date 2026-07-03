@@ -189,7 +189,11 @@ fun MainAppHost(viewModel: MainViewModel) {
                     onDarkModeChange = { viewModel.updateDarkMode(it) },
                     onLanguageChange = { viewModel.updateLanguage(it) },
                     onCategoryEditClick = { currentScreen = "category_edit" },
-                    onExportClick = { viewModel.exportReceiptsToCsv(context) },
+                    onExportClick = { onComplete ->
+                        viewModel.exportReceiptsToCsv(context) {
+                            onComplete()
+                        }
+                    },
                     onBack = { currentScreen = "home" }
                 )
             }

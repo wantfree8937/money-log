@@ -84,8 +84,8 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
         }
     }
 
-    fun exportReceiptsToCsv(context: android.content.Context) {
-        com.example.money_log.core.utils.ExportUtils.exportReceiptsToCsv(context, _receipts.value)
+    fun exportReceiptsToCsv(context: android.content.Context, onComplete: () -> Unit) {
+        com.example.money_log.core.utils.ExportUtils.exportReceiptsToCsv(context, _receipts.value, onComplete)
     }
 
     @OptIn(kotlinx.coroutines.ExperimentalCoroutinesApi::class)

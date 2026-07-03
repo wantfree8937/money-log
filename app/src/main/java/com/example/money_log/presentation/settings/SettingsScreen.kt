@@ -29,12 +29,13 @@ fun SettingsScreen(
     onDarkModeChange: (String) -> Unit,
     onLanguageChange: (String) -> Unit,
     onCategoryEditClick: () -> Unit,
-    onExportClick: () -> Unit,
+    onExportClick: (onComplete: () -> Unit) -> Unit,
     onBack: () -> Unit
 ) {
 
     var showDarkModeDialog by remember { mutableStateOf(false) }
     var showLanguageDialog by remember { mutableStateOf(false) }
+    var showExportConfirmDialog by remember { mutableStateOf(false) }
 
 
     if (showDarkModeDialog) {
@@ -105,6 +106,30 @@ fun SettingsScreen(
         )
     }
 
+    if (showExportConfirmDialog) {
+        AlertDialog(
+            onDismissRequest = { showExportConfirmDialog = false },
+            title = { Text("지출 내역 다운로드", fontWeight = FontWeight.Bold) },
+            text = { Text("가계부 지출 내역을 CSV 파일로 다운로드 하시겠습니까?") },
+            confirmButton = {
+                Button(
+                    onClick = {
+                        showExportConfirmDialog = false
+                        onExportClick {}
+                    },
+                    colors = ButtonDefaults.buttonColors(containerColor = MainGreen)
+                ) {
+                    Text("다운로드")
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { showExportConfirmDialog = false }) {
+                    Text("취소")
+                }
+            }
+        )
+    }
+
     Scaffold(
         topBar = {
             TopAppBar(
@@ -143,7 +168,7 @@ fun SettingsScreen(
                 SettingsItem(
                     icon = Icons.Default.FileDownload,
                     title = "엑셀(CSV) 내보내기",
-                    onClick = onExportClick
+                    onClick = { showExportConfirmDialog = true }
                 )
             }
 
