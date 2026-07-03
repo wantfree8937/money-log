@@ -41,6 +41,7 @@ import java.util.Locale
 fun StatisticsScreen(
     receipts: List<Receipt>,
     onAddClick: () -> Unit,
+    onGalleryClick: () -> Unit,
     onManualEntryClick: () -> Unit,
     currentScreen: String = "statistics",
     onScreenSelected: (String) -> Unit
@@ -88,6 +89,18 @@ fun StatisticsScreen(
                     modifier = Modifier.clickable {
                         showAddOptions = false
                         onAddClick()
+                    }
+                )
+
+                ListItem(
+                    headlineContent = { Text("갤러리에서 가져오기") },
+                    supportingContent = { Text("사진첩에서 영수증 이미지를 선택합니다") },
+                    leadingContent = { 
+                        Icon(Icons.Default.Image, contentDescription = null, tint = MainGreen) 
+                    },
+                    modifier = Modifier.clickable {
+                        showAddOptions = false
+                        onGalleryClick()
                     }
                 )
                 

@@ -170,6 +170,7 @@ fun MainAppHost(viewModel: MainViewModel) {
                     onDeleteSelected = { viewModel.deleteSelectedReceipts(it) },
                     onBack = { currentScreen = "home" },
                     onCameraClick = { showCamera = true },
+                    onGalleryClick = { galleryAddLauncher.launch("image/*") },
                     onManualEntryClick = { viewModel.startManualEntry() },
                     onScreenSelected = { currentScreen = it }
                 )
@@ -178,6 +179,7 @@ fun MainAppHost(viewModel: MainViewModel) {
                 StatisticsScreen(
                     receipts = receipts,
                     onAddClick = { showCamera = true },
+                    onGalleryClick = { galleryAddLauncher.launch("image/*") },
                     onManualEntryClick = { viewModel.startManualEntry() },
                     onScreenSelected = { currentScreen = it }
                 )

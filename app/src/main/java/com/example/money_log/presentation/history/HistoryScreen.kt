@@ -15,6 +15,7 @@ import androidx.compose.material.icons.filled.RestoreFromTrash
 import androidx.compose.material.icons.filled.CameraAlt
 import androidx.compose.material.icons.filled.EditNote
 import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.Image
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -43,6 +44,7 @@ fun HistoryScreen(
     onDeleteSelected: (List<Receipt>) -> Unit,
     onBack: () -> Unit,
     onCameraClick: () -> Unit,
+    onGalleryClick: () -> Unit,
     onManualEntryClick: () -> Unit,
     onScreenSelected: (String) -> Unit
 ) {
@@ -94,6 +96,18 @@ fun HistoryScreen(
                     modifier = Modifier.clickable {
                         showAddOptions = false
                         onCameraClick()
+                    }
+                )
+
+                ListItem(
+                    headlineContent = { Text("갤러리에서 가져오기") },
+                    supportingContent = { Text("사진첩에서 영수증 이미지를 선택합니다") },
+                    leadingContent = { 
+                        Icon(Icons.Default.Image, contentDescription = null, tint = MainGreen) 
+                    },
+                    modifier = Modifier.clickable {
+                        showAddOptions = false
+                        onGalleryClick()
                     }
                 )
                 
