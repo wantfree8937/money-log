@@ -77,7 +77,8 @@ object ReceiptParser {
                     val match = numberRegex.find(suffix)
                     if (match != null) {
                         val amt = match.groupValues[1].replace(",", "").toIntOrNull() ?: 0
-                        if (amt > 0) {
+                        // 100원 영수증 소액 제한을 통해 수량 등급 번호(예: '2', '3') 가 최종 결제액으로 잡히는 중대 버그 차단
+                        if (amt >= 100) {
                             return amt
                         }
                     }

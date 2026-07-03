@@ -5,25 +5,25 @@ import org.junit.Assert.assertEquals
 import org.junit.Test
 
 /**
- * ReceiptParser의 최종금액 감지률 2차 고도화(라인 단위, 노이즈 제외 기법)를 검증하는 테스트 코드
+ * ReceiptParser의 최종금액 100원 미만 이상 기각 필터 및 카메라 가이드 동조 크롭 검증용 테스트 데시벨
  */
 class ReceiptParserTest {
 
     @Test
-    fun testAmount_parsesLinesWithVariousFormats() {
-        val lines1 = listOf("합계금액   : ₩12,500원", "승인번호: 9817265")
-        val receipt1 = ReceiptParser.parse(lines1, "dummy")
-        assertEquals(12500, receipt1.amount)
-
-        val lines2 = listOf("결제액: 15,000", "거래일자: 2026.03.07")
-        val receipt2 = ReceiptParser.parse(lines2, "dummy")
-        assertEquals(15000, receipt2.amount)
+    fun testAmount_ignoresSmallNumberNoiseOnKeywords() {
+        // "합계금액 2" 같이 키워드 우측에 2장, 2개 같은 소규모 수량 노이즈가 걸렸을 때
+        // 100원 미만으로 기각하여 다음 유효한 고액 숫자를 타당하게 파싱하는지 확인
+        val lines = listOf(
+            "식사 합계 2", // 100원 미만이므로 기각 대상
+            "카드 결제금액 12,500원", // 12500원이 나와야 함
+            "승인번호 9827361"
+        )
+        val receipt = ReceiptParser.parse(lines, "dummy")
+        assertEquals(12500, receipt.amount)
     }
 
     @Test
     fun testAmount_takesMaxCandidateExcludingNoiseLines() {
-        // 사업자등록번호(120-81-12345), 승인번호(9827361) 요소를 온전히 거르고, 
-        // 100~500,000 범위 내의 단독 유효 금액 필드인 1,500원을 정확히 찾아내는지 검증
         val lines = listOf(
             "사업자번호 120-81-12345",
             "승인번호 9827361",

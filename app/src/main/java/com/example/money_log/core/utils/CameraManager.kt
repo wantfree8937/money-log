@@ -26,7 +26,7 @@ class CameraManager(
     private var imageCapture: ImageCapture? = null
     private var imageAnalysis: ImageAnalysis? = null
 
-    fun startCamera(analyzer: ImageAnalysis.Analyzer? = null) {
+    fun startCamera(lensFacing: Int = CameraSelector.LENS_FACING_BACK, analyzer: ImageAnalysis.Analyzer? = null) {
         val cameraProviderFuture = ProcessCameraProvider.getInstance(context)
 
         cameraProviderFuture.addListener({
@@ -50,7 +50,7 @@ class CameraManager(
                     }
             } else null
 
-            val cameraSelector = CameraSelector.DEFAULT_BACK_CAMERA
+            val cameraSelector = CameraSelector.Builder().requireLensFacing(lensFacing).build()
 
             try {
                 cameraProvider.unbindAll()

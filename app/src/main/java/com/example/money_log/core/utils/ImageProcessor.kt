@@ -73,9 +73,9 @@ object ImageProcessor {
         val width = bitmap.width
         val height = bitmap.height
         
-        // 0.85% width, 0.7 aspect ratio (CameraScreen의 가이드와 일치)
-        val targetWidth = (width * 0.85f).toInt()
-        val targetHeight = (targetWidth / 0.7f).toInt()
+        // 가이드 박스 비율(가로 85%, 종횡비 0.6) 인근에서 텍스트 잘림을 방지하기 위해 95% 광폭 비례 설정
+        val targetWidth = (width * 0.95f).toInt()
+        val targetHeight = (targetWidth / 0.6f).toInt()
         
         // 크기가 원본보다 크지 않도록 조정
         val finalWidth = if (targetWidth > width) width else targetWidth

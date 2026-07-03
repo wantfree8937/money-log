@@ -26,8 +26,17 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.viewinterop.AndroidView
 import com.example.money_log.core.utils.ReceiptAnalyzer
 import com.example.money_log.core.utils.CameraManager
+import com.example.money_log.core.utils.ImageProcessor
 import com.example.money_log.ui.theme.MainGreen
 import java.io.File
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
+import androidx.camera.core.CameraSelector
+import android.net.Uri
+import java.io.FileOutputStream
+import java.io.InputStream
+import android.content.Context
+
 
 @Composable
 fun CameraScreen(
@@ -38,23 +47,40 @@ fun CameraScreen(
     val lifecycleOwner = LocalLifecycleOwner.current
     val previewView = remember { PreviewView(context) }
     
+    // 카메라 전/후면 방향 관리 (기본값: 후면)
+    var lensFacing by remember { mutableStateOf(CameraSelector.LENS_FACING_BACK) }
+    
     // 자동 스캔 상태 관리
     var isAutoDetecting by remember { mutableStateOf(false) }
     val analyzer = remember {
         ReceiptAnalyzer(onReceiptDetected = {
             isAutoDetecting = true
-            // 캡처 실행 (약간의 피드백을 위해 지연을 줄 수도 있음)
-            onImageCaptured // 실제 캡처는 CameraUIOverlay의 onCapture와 연결된 것과 동일하게 수행
+            // 캡처 실행
+            onImageCaptured
         })
     }
     
     val cameraManager = remember { CameraManager(context, lifecycleOwner, previewView) }
-
-    LaunchedEffect(Unit) {
-        cameraManager.startCamera(analyzer)
+    
+    // 렌즈 방향이 변경될 때마다 카메라 재구동
+    LaunchedEffect(lensFacing) {
+        cameraManager.startCamera(lensFacing, analyzer)
     }
 
-    // analyzer의 콜백 내용을 완성하기 위해 수정
+    // 갤러리 미디어 픽커 런처 정의
+    val galleryLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.GetContent()
+    ) { uri: Uri? ->
+        uri?.let {
+            val copiedFile = copyUriToCacheFile(context, it)
+            if (copiedFile != null) {
+                // 가져온 이미지를 분석을 위해 전처리하고 상세화면으로 전달
+                val processedFile = ImageProcessor.processImage(context, copiedFile)
+                onImageCaptured(processedFile)
+            }
+        }
+    }
+
     LaunchedEffect(isAutoDetecting) {
         if (isAutoDetecting) {
             cameraManager.takePhoto(onImageCaptured)
@@ -72,14 +98,43 @@ fun CameraScreen(
         CameraUIOverlay(
             onClose = onClose,
             onCapture = { cameraManager.takePhoto(onImageCaptured) },
+            onGalleryClick = { galleryLauncher.launch("image/*") },
+            onSwitchCameraClick = {
+                lensFacing = if (lensFacing == CameraSelector.LENS_FACING_BACK) {
+                    CameraSelector.LENS_FACING_FRONT
+                } else {
+                    CameraSelector.LENS_FACING_BACK
+                }
+            },
             isAutoDetecting = isAutoDetecting
         )
     }
 }
 
+// 갤러리에서 선택된 이미지 스트림을 캐시 디렉터리로 복제하는 헬퍼 함수
+private fun copyUriToCacheFile(context: Context, uri: Uri): File? {
+    return try {
+        val inputStream = context.contentResolver.openInputStream(uri) ?: return null
+        val tempFile = File(context.cacheDir, "gallery_${System.currentTimeMillis()}.jpg")
+        FileOutputStream(tempFile).use { outputStream ->
+            inputStream.copyTo(outputStream)
+        }
+        tempFile
+    } catch (e: Exception) {
+        e.printStackTrace()
+        null
+    }
+}
+
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun CameraUIOverlay(onClose: () -> Unit, onCapture: () -> Unit, isAutoDetecting: Boolean = false) {
+fun CameraUIOverlay(
+    onClose: () -> Unit,
+    onCapture: () -> Unit,
+    onGalleryClick: () -> Unit,
+    onSwitchCameraClick: () -> Unit,
+    isAutoDetecting: Boolean = false
+) {
     Column(modifier = Modifier.fillMaxSize()) {
         // 상단 바
         Row(
@@ -110,7 +165,8 @@ fun CameraUIOverlay(onClose: () -> Unit, onCapture: () -> Unit, isAutoDetecting:
         Box(
             modifier = Modifier
                 .fillMaxWidth(0.85f)
-                .aspectRatio(0.7f)
+                .aspectRatio(0.6f)
+                .heightIn(max = 450.dp)
                 .align(Alignment.CenterHorizontally)
                 .border(
                     2.dp, 
@@ -140,7 +196,7 @@ fun CameraUIOverlay(onClose: () -> Unit, onCapture: () -> Unit, isAutoDetecting:
             horizontalArrangement = Arrangement.SpaceBetween,
             verticalAlignment = Alignment.CenterVertically
         ) {
-            CameraControlButton(Icons.Default.Image, "갤러리")
+            CameraControlButton(Icons.Default.Image, "갤러리", onGalleryClick)
             
             // 셔터 버튼
             Surface(
@@ -154,7 +210,7 @@ fun CameraUIOverlay(onClose: () -> Unit, onCapture: () -> Unit, isAutoDetecting:
                 )
             }
 
-            CameraControlButton(Icons.Default.Cameraswitch, "카메라 전환")
+            CameraControlButton(Icons.Default.Cameraswitch, "카메라 전환", onSwitchCameraClick)
         }
     }
 }
@@ -215,12 +271,13 @@ fun ScanningLine() {
 }
 
 @Composable
-fun CameraControlButton(icon: ImageVector, label: String) {
+fun CameraControlButton(icon: ImageVector, label: String, onClick: () -> Unit) {
     Column(horizontalAlignment = Alignment.CenterHorizontally) {
         Surface(
             modifier = Modifier.size(56.dp),
             shape = CircleShape,
-            color = Color.White.copy(alpha = 0.2f)
+            color = Color.White.copy(alpha = 0.2f),
+            onClick = onClick
         ) {
             Icon(icon, contentDescription = label, tint = Color.White, modifier = Modifier.padding(16.dp))
         }
