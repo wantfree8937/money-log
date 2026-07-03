@@ -40,6 +40,9 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
     private val _monthlyTotal = MutableStateFlow(0)
     val monthlyTotal: StateFlow<Int> = _monthlyTotal.asStateFlow()
 
+    private val _lastMonthTotal = MutableStateFlow(0)
+    val lastMonthTotal: StateFlow<Int> = _lastMonthTotal.asStateFlow()
+
     private val _parsedReceipt = MutableStateFlow<Receipt?>(null)
     val parsedReceipt: StateFlow<Receipt?> = _parsedReceipt.asStateFlow()
 
@@ -53,6 +56,7 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
     init {
         loadReceipts()
         observeMonthlyTotal()
+        observeLastMonthTotal()
     }
 
     // 설정 업데이트 함수들
@@ -98,6 +102,15 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
         }
     }
 
+    private fun observeLastMonthTotal() {
+        viewModelScope.launch {
+            val (startDate, endDate) = calculateLastMonthDateRange()
+            getMonthlyTotalUseCase(startDate, endDate).collect {
+                _lastMonthTotal.value = it
+            }
+        }
+    }
+
     /**
      * 이번 달의 첫날과 마지막 날 계산 (1일 ~ 말일)
      */
@@ -109,6 +122,23 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
         startCal.set(Calendar.DAY_OF_MONTH, 1)
 
         val endCal = Calendar.getInstance()
+        endCal.set(Calendar.DAY_OF_MONTH, endCal.getActualMaximum(Calendar.DAY_OF_MONTH))
+
+        return sdf.format(startCal.time) to sdf.format(endCal.time)
+    }
+
+    /**
+     * 지난 달의 첫날과 마지막 날 계산 (1일 ~ 말일)
+     */
+    private fun calculateLastMonthDateRange(): Pair<String, String> {
+        val sdf = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault())
+
+        val startCal = Calendar.getInstance()
+        startCal.add(Calendar.MONTH, -1)
+        startCal.set(Calendar.DAY_OF_MONTH, 1)
+
+        val endCal = Calendar.getInstance()
+        endCal.add(Calendar.MONTH, -1)
         endCal.set(Calendar.DAY_OF_MONTH, endCal.getActualMaximum(Calendar.DAY_OF_MONTH))
 
         return sdf.format(startCal.time) to sdf.format(endCal.time)

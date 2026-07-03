@@ -81,6 +81,7 @@ class MainActivity : ComponentActivity() {
 fun MainAppHost(viewModel: MainViewModel) {
     val receipts by viewModel.receipts.collectAsStateWithLifecycle()
     val monthlyTotal by viewModel.monthlyTotal.collectAsStateWithLifecycle()
+    val lastMonthTotal by viewModel.lastMonthTotal.collectAsStateWithLifecycle()
     val parsedReceipt by viewModel.parsedReceipt.collectAsStateWithLifecycle()
     
     // 설정값 구독
@@ -154,6 +155,7 @@ fun MainAppHost(viewModel: MainViewModel) {
                 HomeScreen(
                     receipts = receipts,
                     monthlyTotal = monthlyTotal,
+                    lastMonthTotal = lastMonthTotal,
                     onAddClick = { showCamera = true },
                     onManualEntryClick = { viewModel.startManualEntry() },
                     onGalleryAddClick = { galleryAddLauncher.launch("image/*") },

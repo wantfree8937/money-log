@@ -36,6 +36,7 @@ import java.util.Locale
 fun HomeScreen(
     receipts: List<Receipt>,
     monthlyTotal: Int,
+    lastMonthTotal: Int,
     onAddClick: () -> Unit,
     onManualEntryClick: () -> Unit,
     onGalleryAddClick: () -> Unit,
@@ -133,7 +134,7 @@ fun HomeScreen(
             Spacer(modifier = Modifier.height(16.dp))
             
             // 총 지출 카드
-            TotalSpendingCard(monthlyTotal)
+            TotalSpendingCard(monthlyTotal, lastMonthTotal, currentMonthReceipts.size)
             
             Spacer(modifier = Modifier.height(24.dp))
             
@@ -188,7 +189,7 @@ fun HomeScreen(
 }
 
 @Composable
-fun TotalSpendingCard(total: Int) {
+fun TotalSpendingCard(total: Int, lastMonthTotal: Int, currentMonthCount: Int) {
     Card(
         modifier = Modifier.fillMaxWidth().height(160.dp),
         shape = RoundedCornerShape(24.dp),
@@ -216,15 +217,33 @@ fun TotalSpendingCard(total: Int) {
                         modifier = Modifier.padding(horizontal = 12.dp, vertical = 4.dp),
                         verticalAlignment = Alignment.CenterVertically
                     ) {
+                        val diff = total - lastMonthTotal
+                        val ratio = if (lastMonthTotal > 0) {
+                            (kotlin.math.abs(diff).toFloat() / lastMonthTotal.toFloat() * 100).toInt()
+                        } else {
+                            0
+                        }
+
+                        val trendText = when {
+                            lastMonthTotal == 0 && total == 0 -> "이번 달 지출을 기록해 보세요"
+                            lastMonthTotal == 0 && currentMonthCount <= 1 -> "이번 달의 첫 소비 기록이에요"
+                            lastMonthTotal == 0 && currentMonthCount > 1 -> "이번 달 소비 기록을 쌓아가고 있어요"
+                            diff > 0 -> "지난달보다 ${ratio}% 더 썼어요"
+                            diff < 0 -> "지난달보다 ${ratio}% 적게 썼어요"
+                            else -> "지난달과 지출이 같아요"
+                        }
+
+                        val trendIcon = if (diff >= 0) Icons.Default.TrendingUp else Icons.Default.TrendingDown
+
                         Icon(
-                            Icons.Default.TrendingDown, 
+                            trendIcon, 
                             contentDescription = null, 
                             tint = Color.White,
                             modifier = Modifier.size(16.dp)
                         )
                         Spacer(modifier = Modifier.width(4.dp))
                         Text(
-                            "지난달보다 4.2% 적게 썼어요", 
+                            trendText, 
                             color = Color.White, 
                             style = MaterialTheme.typography.bodySmall
                         )
